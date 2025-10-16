@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders - Astros Kulture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="admin-home.html">Home Config</a></li>
+            <li><a href="admin-products.html">Products</a></li>
+            <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <section class="admin fade-in">
+        <h2>Manage Orders</h2>
+        <div id="orders" class="products-grid"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        async function checkAdmin() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (!data.success || data.user.role !== 'admin') {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/orders', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('orders').innerHTML = data.orders.map(order => `
+                        <div class="order">
+                            <p>Order ID: ${order._id}</p>
+                            <p>User: ${order.userEmail}</p>
+                            <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                            <p>Total: $${order.total.toFixed(2)}</p>
+                            <p>Status: ${order.status}</p>
+                            <p>Items: ${Object.entries(order.items).map(([id, qty]) => `${id} (x${qty})`).join(', ')}</p>
+                            <select class="status-select" id="status-${order._id}">
+                                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                            <button class="btn" onclick="updateOrderStatus('${order._id}')">Update Status</button>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('orders').innerHTML = '<p>No orders found or access denied.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('orders').innerHTML = '<p>Error loading orders. Please try again.</p>';
+            }
+        }
+
+        async function updateOrderStatus(id) {
+            const status = document.getElementById(`status-${id}`).value;
+            try {
+                const response = await fetch(`http://localhost:3000/api/admin/orders/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Order status updated successfully');
+                    loadOrders();
+                } else {
+                    alert(data.message || 'Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Error updating order status');
+            }
+        }
+
+        checkAdmin();
+        loadOrders();
+    </script>
+</body>
+</html>

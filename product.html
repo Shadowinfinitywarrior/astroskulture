@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product - Astros Kulture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown-parent">
+                <a href="#">Products</a>
+                <ul class="dropdown">
+                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                </ul>
+            </li>
+            <li class="dropdown-parent">
+                <a href="#">Account</a>
+                <ul class="dropdown" id="account-menu">
+                    <li><a href="login.html" class="login-link">Login</a></li>
+                    <li><a href="register.html" class="login-link">Register</a></li>
+                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                </ul>
+            </li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><input type="text" placeholder="Search" id="search"></li>
+        </ul>
+    </nav>
+
+    <section class="product-details fade-in">
+        <div id="product"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        updateAccountMenu();
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) return;
+            try {
+                const response = await fetch(`http://localhost:3000/api/products/${id}`);
+                const data = await response.json();
+                if (data.success) {
+                    const product = data.product;
+                    const images = product.images && product.images.length ? product.images : ['logo.png'];
+                    document.getElementById('product').innerHTML = `
+                        <div class="image-gallery">
+                            ${images.map((img, index) => `
+                                <img src="${img}" alt="${product.name}" class="${index === 0 ? 'active' : ''}" onerror="this.src='logo.png';">
+                            `).join('')}
+                            <div class="thumbnail-gallery">
+                                ${images.map(img => `<img src="${img}" alt="${product.name}" onclick="changeImage(this)" onerror="this.style.display='none';">`).join('')}
+                            </div>
+                        </div>
+                        <div class="details">
+                            <h2>${product.name}</h2>
+                            <p>Price: $${product.price.toFixed(2)}</p>
+                            <p>Description: ${product.description || 'No description available'}</p>
+                            <p>Category: ${product.category || 'N/A'}</p>
+                            <button class="btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+                        </div>
+                    `;
+                    addToRecentlyViewed(id);
+                } else {
+                    document.getElementById('product').innerHTML = '<p>Product not found.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+                document.getElementById('product').innerHTML = '<p>Error loading product. Please try again.</p>';
+            }
+        }
+
+        function changeImage(thumb) {
+            const gallery = document.querySelector('.image-gallery');
+            gallery.querySelector('.active').classList.remove('active');
+            const mainImg = gallery.querySelector(`img[src="${thumb.src}"]`);
+            if (mainImg) mainImg.classList.add('active');
+        }
+
+        function addToRecentlyViewed(productId) {
+            let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            if (!recentlyViewed.includes(productId)) {
+                recentlyViewed.unshift(productId);
+                recentlyViewed = recentlyViewed.slice(0, 10); // Limit to 10 items
+                localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+            }
+        }
+
+        loadProduct();
+    </script>
+</body>
+</html>

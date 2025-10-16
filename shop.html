@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Astros Kulture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown-parent">
+                <a href="#">Products</a>
+                <ul class="dropdown">
+                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                </ul>
+            </li>
+            <li class="dropdown-parent">
+                <a href="#">Account</a>
+                <ul class="dropdown" id="account-menu">
+                    <li><a href="login.html" class="login-link">Login</a></li>
+                    <li><a href="register.html" class="login-link">Register</a></li>
+                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                </ul>
+            </li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><input type="text" placeholder="Search" id="search" onkeyup="searchProducts()"></li>
+        </ul>
+    </nav>
+
+    <section class="shop-grid fade-in">
+        <h2 id="category-title"></h2>
+        <div class="filters">
+            <select id="sort">
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+            </select>
+        </div>
+        <div id="products" class="products-grid"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        updateAccountMenu();
+        async function loadProducts() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category') || '';
+            try {
+                let url = `http://localhost:3000/api/products${category ? `?category=${category}` : ''}`;
+                const sort = document.getElementById('sort').value;
+                if (sort) url += `${category ? '&' : '?'}sort=${sort}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('category-title').textContent = category ? category.charAt(0).toUpperCase() + category.slice(1) + ' T-shirts' : 'All Products';
+                    displayProducts(data.products);
+                } else {
+                    document.getElementById('products').innerHTML = '<p>No products found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('products').innerHTML = '<p>Error loading products. Please try again.</p>';
+            }
+        }
+
+        function displayProducts(products) {
+            const sort = document.getElementById('sort').value;
+            let sortedProducts = [...products];
+            if (sort === 'price-asc') sortedProducts.sort((a, b) => a.price - b.price);
+            else if (sort === 'price-desc') sortedProducts.sort((a, b) => b.price - a.price);
+            else if (sort === 'name-asc') sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const filteredProducts = searchTerm ? sortedProducts.filter(p => p.name.toLowerCase().includes(searchTerm)) : sortedProducts;
+            document.getElementById('products').innerHTML = filteredProducts.map(product => `
+                <div class="product">
+                    <img src="${product.images[0] || 'logo.png'}" alt="${product.name}" onerror="this.src='logo.png';">
+                    <h3>${product.name}</h3>
+                    <p>$${product.price.toFixed(2)}</p>
+                    <a href="product.html?id=${product._id}" class="btn" onclick="addToRecentlyViewed('${product._id}')">View</a>
+                    <button class="btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('sort').addEventListener('change', loadProducts);
+        document.getElementById('search').addEventListener('keyup', loadProducts);
+
+        async function searchProducts() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            if (searchTerm.length < 3) {
+                loadProducts();
+                return;
+            }
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const category = urlParams.get('category') || '';
+                const response = await fetch(`http://localhost:3000/api/products/search?query=${searchTerm}${category ? `&category=${category}` : ''}`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('category-title').textContent = `Search Results for "${searchTerm}"`;
+                    displayProducts(data.products);
+                } else {
+                    document.getElementById('products').innerHTML = '<p>No products found</p>';
+                }
+            } catch (error) {
+                console.error('Error searching products:', error);
+                document.getElementById('products').innerHTML = '<p>Error searching products. Please try again.</p>';
+            }
+        }
+
+        function addToRecentlyViewed(productId) {
+            let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            if (!recentlyViewed.includes(productId)) {
+                recentlyViewed.unshift(productId);
+                recentlyViewed = recentlyViewed.slice(0, 10); // Limit to 10 items
+                localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+            }
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>

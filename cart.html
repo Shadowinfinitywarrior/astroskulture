@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Astros Kulture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown-parent">
+                <a href="#">Products</a>
+                <ul class="dropdown">
+                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                </ul>
+            </li>
+            <li class="dropdown-parent">
+                <a href="#">Account</a>
+                <ul class="dropdown" id="account-menu">
+                    <li><a href="login.html" class="login-link">Login</a></li>
+                    <li><a href="register.html" class="login-link">Register</a></li>
+                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                </ul>
+            </li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><input type="text" placeholder="Search" id="search"></li>
+        </ul>
+    </nav>
+
+    <section class="cart">
+        <h2>Your Cart</h2>
+        <div id="cart-items"></div>
+        <div class="cart-summary" id="cart-summary">
+            <p>Total: $<span id="cart-total">0.00</span></p>
+            <button id="checkout-btn">Checkout</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        updateAccountMenu();
+        async function loadCart() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+            const container = document.getElementById('cart-items');
+            if (Object.keys(cart).length === 0) {
+                container.innerHTML = '<p>Your cart is empty</p>';
+                document.getElementById('cart-summary').classList.add('hidden');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Object.keys(cart) })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    let total = 0;
+                    container.innerHTML = data.products.map(product => {
+                        const quantity = cart[product._id];
+                        const itemTotal = product.price * quantity;
+                        total += itemTotal;
+                        return `
+                            <div class="cart-item">
+                                <img src="${product.images[0] || 'logo.png'}" alt="${product.name}">
+                                <h3>${product.name}</h3>
+                                <p>$${product.price.toFixed(2)} x ${quantity} = $${itemTotal.toFixed(2)}</p>
+                                <button class="btn" onclick="removeFromCart('${product._id}')">Remove</button>
+                            </div>
+                        `;
+                    }).join('');
+                    document.getElementById('cart-total').textContent = total.toFixed(2);
+                    document.getElementById('cart-summary').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                container.innerHTML = '<p>Error loading cart. Please try again.</p>';
+            }
+        }
+
+        function removeFromCart(productId) {
+            const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+            if (cart[productId]) {
+                delete cart[productId];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                loadCart();
+            }
+        }
+
+        document.getElementById('checkout-btn').addEventListener('click', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login to checkout');
+                window.location.href = 'login.html';
+                return;
+            }
+            const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+            if (Object.keys(cart).length === 0) {
+                alert('Your cart is empty');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ items: cart })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Order placed successfully on ' + new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+                    localStorage.removeItem('cart');
+                    window.location.href = 'account.html';
+                } else {
+                    alert(data.message || 'Checkout failed');
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Error during checkout');
+            }
+        });
+
+        loadCart();
+    </script>
+</body>
+</html>

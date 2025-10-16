@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Home Config - Astros Kulture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="admin-home.html">Home Config</a></li>
+            <li><a href="admin-products.html">Products</a></li>
+            <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <section class="admin fade-in">
+        <h2>Manage Homepage</h2>
+        <h3>Row 1 Configuration</h3>
+        <form id="row1-form" class="home-config-form slide-in-left">
+            <input type="text" id="row1-title" placeholder="Row 1 Title" required>
+            <select id="row1-products" multiple>
+                <!-- Populated dynamically -->
+            </select>
+            <button type="submit">Save Row 1</button>
+        </form>
+
+        <h3>Row 2 Configuration</h3>
+        <form id="row2-form" class="home-config-form slide-in-right">
+            <input type="text" id="row2-title" placeholder="Row 2 Title" required>
+            <select id="row2-products" multiple>
+                <!-- Populated dynamically -->
+            </select>
+            <button type="submit">Save Row 2</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        async function checkAdmin() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (!data.success || data.user.role !== 'admin') {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                const token = localStorage.getItem('token');
+                const [row1Response, row2Response, productsResponse] = await Promise.all([
+                    fetch('http://localhost:3000/api/home?row=row1', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('http://localhost:3000/api/home?row=row2', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('http://localhost:3000/api/admin/products', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+                const [row1Data, row2Data, productsData] = await Promise.all([row1Response.json(), row2Response.json(), productsResponse.json()]);
+
+                if (row1Data.success) {
+                    document.getElementById('row1-title').value = row1Data.title || '';
+                    const row1Select = document.getElementById('row1-products');
+                    row1Select.innerHTML = '';
+                    if (productsData.success) {
+                        productsData.products.forEach(product => {
+                            const option = document.createElement('option');
+                            option.value = product._id;
+                            option.textContent = `${product.name} - $${product.price}`;
+                            if (row1Data.products.some(p => p._id === product._id)) option.selected = true;
+                            row1Select.appendChild(option);
+                        });
+                    }
+                }
+                if (row2Data.success) {
+                    document.getElementById('row2-title').value = row2Data.title || '';
+                    const row2Select = document.getElementById('row2-products');
+                    row2Select.innerHTML = '';
+                    if (productsData.success) {
+                        productsData.products.forEach(product => {
+                            const option = document.createElement('option');
+                            option.value = product._id;
+                            option.textContent = `${product.name} - $${product.price}`;
+                            if (row2Data.products.some(p => p._id === product._id)) option.selected = true;
+                            row2Select.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading config:', error);
+                document.getElementById('row1-form').innerHTML = '<p>Error loading Row 1 configuration.</p>';
+                document.getElementById('row2-form').innerHTML = '<p>Error loading Row 2 configuration.</p>';
+            }
+        }
+
+        document.getElementById('row1-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const title = document.getElementById('row1-title').value;
+            const products = Array.from(document.getElementById('row1-products').selectedOptions).map(opt => opt.value);
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/home', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ row: 'row1', title, products })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Row 1 updated successfully');
+                    loadConfig(); // Reload to reflect changes
+                } else {
+                    alert(data.message || 'Failed to update row 1');
+                }
+            } catch (error) {
+                console.error('Error updating row 1:', error);
+                alert('Error updating Row 1 configuration');
+            }
+        });
+
+        document.getElementById('row2-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const title = document.getElementById('row2-title').value;
+            const products = Array.from(document.getElementById('row2-products').selectedOptions).map(opt => opt.value);
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/home', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ row: 'row2', title, products })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Row 2 updated successfully');
+                    loadConfig(); // Reload to reflect changes
+                } else {
+                    alert(data.message || 'Failed to update row 2');
+                }
+            } catch (error) {
+                console.error('Error updating row 2:', error);
+                alert('Error updating Row 2 configuration');
+            }
+        });
+
+        checkAdmin();
+        loadConfig();
+    </script>
+</body>
+</html>

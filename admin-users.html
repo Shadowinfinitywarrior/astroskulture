@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astros Kulture - Admin Users</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="admin-home.html">Home Config</a></li>
+            <li><a href="admin-products.html">Products</a></li>
+            <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="admin-users.html">Users</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <section class="admin fade-in">
+        <h2>Manage Users</h2>
+        <div id="users" class="products-grid"></div>
+        <div id="error-message" class="error-message hidden">
+            <p>Error loading users: The server returned a 404 (Not Found) error at 01:36 AM IST, Thursday, October 16, 2025. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        async function checkAdmin() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (!data.success || data.user.role !== 'admin') {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error checking admin:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadUsers() {
+            const usersDiv = document.getElementById('users');
+            const errorDiv = document.getElementById('error-message');
+            usersDiv.innerHTML = '<p>Loading users...</p>';
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/users', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.success) {
+                    usersDiv.innerHTML = data.users.map(user => `
+                        <div class="product-item">
+                            <p>ID: ${user._id}</p>
+                            <p>Name: ${user.name || 'Not provided'}</p>
+                            <p>Email: ${user.email}</p>
+                            <p>Role: ${user.role}</p>
+                            <p>Created At: ${new Date(user.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                            <select class="status-select" id="role-${user._id}">
+                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                            </select>
+                            <button class="btn" onclick="updateUserRole('${user._id}')">Update Role</button>
+                        </div>
+                    `).join('');
+                } else {
+                    usersDiv.innerHTML = '<p>No users found or access denied.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                usersDiv.innerHTML = '';
+                errorDiv.classList.remove('hidden');
+                if (error.message.includes('404')) {
+                    errorDiv.querySelector('p').textContent = `Error loading users: The server returned a 404 (Not Found) error at 01:36 AM IST, Thursday, October 16, 2025. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
+                } else {
+                    errorDiv.querySelector('p').textContent = `Error loading users: ${error.message} at 01:36 AM IST, Thursday, October 16, 2025. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
+                }
+            }
+        }
+
+        async function updateUserRole(id) {
+            const role = document.getElementById(`role-${id}`).value;
+            try {
+                const response = await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ role })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('User role updated successfully');
+                    loadUsers();
+                } else {
+                    alert(data.message || 'Failed to update role');
+                }
+            } catch (error) {
+                console.error('Error updating role:', error);
+                alert('Error updating user role');
+            }
+        }
+
+        function retryLoadUsers() {
+            loadUsers();
+        }
+
+        checkAdmin();
+        loadUsers();
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+astros-kulture/
+├── index.html              # Homepage
+├── shop.html               # Shop page
+├── product.html            # Product details page
+├── cart.html               # Cart page
+├── category.html
+├── login.html              # Login page
+├── register.html           # Register page
+├── account.html            # User account page
+├── admin.html              # Admin dashboard
+├── admin-products.html     # Admin products management
+├── admin-home.html         # Admin homepage config
+├── admin-orders.html       # Admin orders management
+├── style.css               # Global CSS
+├── script.js               # Global JS functions (e.g., addToCart)
+├── logo.png                # Logo (red/white PNG with star icon)
+├── package.json            # Node.js package config
+├── node_modules/           # Node.js dependencies (mongodb, express, etc.)
+└── api/
+    ├── server.js           # Node.js Express server
+    ├── db.js               # MongoDB Atlas connection
+    ├── routes/
+    │   ├── home.js         # API for homepage rows
+    │   ├── products.js     # API for products (get all/by id/by category)
+    │   ├── orders.js       # API for orders (create/get)
+    │   ├── login.js        # API for login
+    │   ├── register.js     # API for register
+    │   ├── auth/
+    │   │   └── me.js       # API for current user info
+    │   └── admin/
+    │       ├── products.js # API for admin product management
+    │       ├── home.js     # API for admin homepage config
+    │       └── orders.js   # API for admin orders management

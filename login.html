@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Astros Kulture</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Astros Kulture">
+        </div>
+        <div class="menu-toggle">☰</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown-parent">
+                <a href="#">Products</a>
+                <ul class="dropdown">
+                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                </ul>
+            </li>
+            <li class="dropdown-parent">
+                <a href="#">Account</a>
+                <ul class="dropdown" id="account-menu">
+                    <li><a href="login.html" class="login-link">Login</a></li>
+                    <li><a href="register.html" class="login-link">Register</a></li>
+                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                </ul>
+            </li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><input type="text" placeholder="Search" id="search"></li>
+        </ul>
+    </nav>
+
+    <form id="login-form" class="auth-form fade-in">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required minlength="6">
+        <button type="submit">Login</button>
+        <p><a href="register.html">Don't have an account? Register</a></p>
+        <p><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
+    </form>
+
+    <footer>
+        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
+        <div class="footer-links">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Return Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        updateAccountMenu();
+        document.getElementById('login-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!email || !password) {
+                alert('Please fill all fields');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                }
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    alert('Logged in successfully at ' + new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+                    window.location.href = data.user.role === 'admin' ? 'admin.html' : 'account.html';
+                } else {
+                    alert(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Error: Unable to login. Check console for details.');
+            }
+        });
+
+        async function resetPassword() {
+            const email = prompt('Enter your email to reset password:');
+            if (email) {
+                try {
+                    const response = await fetch('http://localhost:3000/api/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('Password reset link sent to your email');
+                    } else {
+                        alert(data.message || 'Failed to send reset link');
+                    }
+                } catch (error) {
+                    console.error('Reset password error:', error);
+                    alert('Error sending reset link');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
