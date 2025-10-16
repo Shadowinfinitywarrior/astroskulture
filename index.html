@@ -98,7 +98,7 @@
 
                     const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]').slice(0, 4);
                     if (recentlyViewed.length) {
-                        const recentResponse = await fetch(`http://localhost:3000/api/products`, {
+                        const recentResponse = await fetch(`/api/products`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ ids: recentlyViewed })
@@ -142,7 +142,7 @@
                 return;
             }
             try {
-                const response = await fetch(`http://localhost:3000/api/products/search?query=${searchTerm}`);
+                const response = await fetch(`/api/products/search?query=${searchTerm}`);
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('row1-products').innerHTML = data.products.slice(0, 4).map(product => `
