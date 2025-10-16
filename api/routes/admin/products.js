@@ -1,7 +1,7 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const connectDB = require('../../db');
-const authenticateToken = require('../../middleware/auth'); // Assume middleware for admin check
+const auth = require('../../auth/me'); // Assume middleware for admin check
 
 const router = express.Router();
 
