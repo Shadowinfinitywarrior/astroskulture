@@ -55,7 +55,7 @@
             const id = urlParams.get('id');
             if (!id) return;
             try {
-                const response = await fetch(`http://localhost:3000/api/products/${id}`);
+                const response = await fetch(`/api/products/${id}`);
                 const data = await response.json();
                 if (data.success) {
                     const product = data.product;
