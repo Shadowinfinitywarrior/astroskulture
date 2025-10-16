@@ -44,29 +44,65 @@
     <script src="script.js"></script>
     <script>
         async function checkAdmin() {
+            console.log('Checking admin access...');
             const token = localStorage.getItem('token');
+            
             if (!token) {
+                console.log('No token found, redirecting to login');
                 window.location.href = 'login.html';
-                return;
+                return false;
             }
+            
             try {
+                console.log('Fetching user data...');
                 const response = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                if (!data.success || data.user.role !== 'admin') {
-                    alert('Access denied');
+                console.log('Auth response:', data);
+                
+                // FIX: Check data.data instead of data.user
+                if (!data.success) {
+                    console.log('Auth failed:', data.message);
+                    alert('Authentication failed: ' + data.message);
+                    localStorage.removeItem('token');
                     window.location.href = 'login.html';
-                } else {
-                    document.getElementById('last-login').textContent = new Date(data.user.lastLogin).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) || 'Not available';
+                    return false;
                 }
+
+                // FIX: Use data.data.role instead of data.user.role
+                const userData = data.data;
+                if (!userData || userData.role !== 'admin') {
+                    console.log('Access denied - User role:', userData ? userData.role : 'undefined');
+                    alert('Access denied: Admin privileges required');
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+
+                console.log('Admin access granted');
+                // Update last login display
+                document.getElementById('last-login').textContent = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+                return true;
+                
             } catch (error) {
                 console.error('Error checking admin:', error);
+                alert('Error checking admin access');
+                localStorage.removeItem('token');
                 window.location.href = 'login.html';
+                return false;
             }
         }
 
-        checkAdmin();
+        // Initialize admin page
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Admin page loaded');
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                console.log('Admin dashboard loaded successfully');
+                // You can load additional admin data here if needed
+            }
+        });
     </script>
 </body>
 </html>
