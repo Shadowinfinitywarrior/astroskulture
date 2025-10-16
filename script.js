@@ -7,10 +7,10 @@ function updateAccountMenu() {
     const dashboardLink = accountMenu.querySelector('.dashboard-link');
     if (token) {
       loginLinks.forEach(link => (link.style.display = 'none'));
-      dashboardLink.style.display = 'block';
+      if (dashboardLink) dashboardLink.style.display = 'block';
     } else {
       loginLinks.forEach(link => (link.style.display = 'block'));
-      dashboardLink.style.display = 'none';
+      if (dashboardLink) dashboardLink.style.display = 'none';
     }
   }
 }
@@ -20,13 +20,29 @@ function addToCart(productId) {
   cart[productId] = (cart[productId] || 0) + 1;
   localStorage.setItem('cart', JSON.stringify(cart));
   alert('Added to cart');
+  updateCartCount();
 }
 
 function removeFromCart(productId) {
   let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-  if (cart[productId]) delete cart[productId];
-  localStorage.setItem('cart', JSON.stringify(cart));
-  loadCart(); // Assume loadCart is defined elsewhere
+  if (cart[productId]) {
+    delete cart[productId];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    // Reload cart if on cart page
+    if (typeof loadCart === 'function') {
+      loadCart();
+    }
+  }
+}
+
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+  const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  const cartCount = document.getElementById('cart-count');
+  if (cartCount) {
+    cartCount.textContent = totalItems;
+  }
 }
 
 function logout() {
@@ -43,64 +59,164 @@ function addToWishlist(productId) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function checkAuth() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return false;
+  }
+  return true;
+}
+
+// Search functionality
+function setupSearch() {
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', async (e) => {
+      const query = e.target.value.trim();
+      
+      // Clear previous timeout
+      clearTimeout(searchTimeout);
+      
+      // Remove existing suggestions
+      const existingSuggestions = document.querySelector('.search-suggestions');
+      if (existingSuggestions) {
+        existingSuggestions.remove();
+      }
+      
+      if (query.length < 2) return;
+      
+      // Debounce search
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch(`/api/products?search=${encodeURIComponent(query)}`);
+          const data = await response.json();
+          
+          if (data.success && data.products && data.products.length > 0) {
+            const suggestions = document.createElement('div');
+            suggestions.className = 'search-suggestions';
+            suggestions.innerHTML = data.products.map(product => `
+              <a href="product.html?id=${product._id}" class="suggestion-item">
+                <img src="${product.images && product.images.length > 0 ? product.images[0] : 'placeholder.jpg'}" alt="${product.name}" width="40" height="40">
+                <div>
+                  <div class="product-name">${product.name}</div>
+                  <div class="product-price">$${product.price}</div>
+                </div>
+              </a>
+            `).join('');
+            
+            // Position suggestions below search input
+            const searchRect = searchInput.getBoundingClientRect();
+            suggestions.style.position = 'absolute';
+            suggestions.style.top = `${searchRect.bottom + window.scrollY}px`;
+            suggestions.style.left = `${searchRect.left + window.scrollX}px`;
+            suggestions.style.width = `${searchRect.width}px`;
+            
+            document.body.appendChild(suggestions);
+            
+            // Remove suggestions when clicking outside or on a suggestion
+            const removeSuggestions = () => {
+              if (suggestions.parentNode) {
+                suggestions.remove();
+              }
+              document.removeEventListener('click', removeSuggestions);
+            };
+            
+            setTimeout(() => {
+              document.addEventListener('click', removeSuggestions);
+            }, 100);
+            
+          }
+        } catch (error) {
+          console.error('Search error:', error);
+        }
+      }, 300);
+    });
+    
+    // Clear suggestions when search is cleared
+    searchInput.addEventListener('blur', () => {
+      setTimeout(() => {
+        const suggestions = document.querySelector('.search-suggestions');
+        if (suggestions) {
+          suggestions.remove();
+        }
+      }, 200);
+    });
+  }
+}
+
+// Mobile menu functionality
+function setupMobileMenu() {
   const menuToggle = document.querySelector('.menu-toggle');
   const navLinks = document.querySelector('.nav-links');
   const dropdownParents = document.querySelectorAll('.dropdown-parent');
 
   if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => {
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       navLinks.classList.toggle('active');
+      // Close all dropdowns when toggling menu
       dropdownParents.forEach(dp => dp.classList.remove('active'));
     });
 
+    // Dropdown functionality for mobile
     dropdownParents.forEach(dp => {
-      dp.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-          dp.classList.toggle('active');
-        }
-      });
+      const link = dp.querySelector('a');
+      if (link) {
+        link.addEventListener('click', (e) => {
+          if (window.innerWidth <= 768) {
+            e.preventDefault();
+            e.stopPropagation();
+            dp.classList.toggle('active');
+          }
+        });
+      }
     });
-  }
 
-  const searchInput = document.getElementById('search');
-  if (searchInput) {
-    searchInput.addEventListener('input', async e => {
-      const query = e.target.value;
-      if (query.length < 3) return;
-      try {
-        const response = await fetch(`http://localhost:3000/api/products?search=${query}`);
-        const data = await response.json();
-        if (data.success) {
-          let suggestions = document.querySelector('.search-suggestions');
-          if (suggestions) suggestions.remove();
-          suggestions = document.createElement('div');
-          suggestions.className = 'search-suggestions';
-          suggestions.innerHTML = data.products.map(product => `
-            <a href="product.html?id=${product._id}" class="suggestion-item">
-              ${product.name} - $${product.price}
-            </a>
-          `).join('');
-          document.body.appendChild(suggestions);
-
-          suggestions.addEventListener('mouseleave', () => suggestions.remove());
-        }
-      } catch (error) {
-        console.error('Search error:', error);
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+        navLinks.classList.remove('active');
+        dropdownParents.forEach(dp => dp.classList.remove('active'));
       }
     });
   }
+}
+
+// Track recently viewed products
+function trackRecentlyViewed() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+  
+  if (productId && window.location.pathname.includes('product.html')) {
+    let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    
+    // Remove if already exists
+    recentlyViewed = recentlyViewed.filter(id => id !== productId);
+    
+    // Add to beginning
+    recentlyViewed.unshift(productId);
+    
+    // Keep only last 10 items
+    recentlyViewed = recentlyViewed.slice(0, 10);
+    
+    localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+  }
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  updateAccountMenu();
+  updateCartCount();
+  setupMobileMenu();
+  setupSearch();
+  trackRecentlyViewed();
 });
 
-// Track recently viewed
-window.addEventListener('popstate', () => {
-  const id = new URLSearchParams(window.location.search).get('id');
-  if (id) {
-    let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-    if (!recentlyViewed.includes(id)) {
-      recentlyViewed.unshift(id);
-      recentlyViewed = recentlyViewed.slice(0, 10); // Limit to 10 items
-      localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
-    }
-  }
+// Update account menu and cart count when page loads
+window.addEventListener('load', () => {
+  updateAccountMenu();
+  updateCartCount();
 });
