@@ -67,7 +67,7 @@
             errorDiv.classList.add('hidden');
 
             try {
-                const response = await fetch('http://localhost:3000/api/admin/users', {
+                const response = await fetch('/api/admin/users', {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 if (!response.ok) {
@@ -107,7 +107,7 @@
         async function updateUserRole(id) {
             const role = document.getElementById(`role-${id}`).value;
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+                const response = await fetch(`/api/admin/users/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
