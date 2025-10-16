@@ -13,9 +13,11 @@
         </div>
         <div class="menu-toggle">☰</div>
         <ul class="nav-links">
+            <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
             <li><a href="admin-products.html">Products</a></li>
             <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="admin-users.html">Users</a></li>
             <li><a href="#" onclick="logout()">Logout</a></li>
         </ul>
     </nav>
@@ -56,63 +58,74 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
-                return;
+                return false;
             }
             try {
                 const response = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                if (!data.success || data.user.role !== 'admin') {
+                // FIX: Changed from data.user.role to data.data.role
+                if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
+                    return false;
                 }
+                return true;
             } catch (error) {
                 window.location.href = 'login.html';
+                return false;
             }
         }
 
         async function loadConfig() {
             try {
                 const token = localStorage.getItem('token');
-                const [row1Response, row2Response, productsResponse] = await Promise.all([
-                    fetch('/api/home?row=row1', {
+                const [homeResponse, productsResponse] = await Promise.all([
+                    fetch('/api/admin/home', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }),
-                    fetch('http://localhost:3000/api/home?row=row2', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch('http://localhost:3000/api/admin/products', {
+                    fetch('/api/admin/products', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
                 ]);
-                const [row1Data, row2Data, productsData] = await Promise.all([row1Response.json(), row2Response.json(), productsResponse.json()]);
+                
+                const homeData = await homeResponse.json();
+                const productsData = await productsResponse.json();
 
-                if (row1Data.success) {
-                    document.getElementById('row1-title').value = row1Data.title || '';
-                    const row1Select = document.getElementById('row1-products');
-                    row1Select.innerHTML = '';
-                    if (productsData.success) {
-                        productsData.products.forEach(product => {
-                            const option = document.createElement('option');
-                            option.value = product._id;
-                            option.textContent = `${product.name} - $${product.price}`;
-                            if (row1Data.products.some(p => p._id === product._id)) option.selected = true;
-                            row1Select.appendChild(option);
-                        });
+                console.log('Home data:', homeData);
+                console.log('Products data:', productsData);
+
+                if (homeData.success) {
+                    // Row 1
+                    if (homeData.row1) {
+                        document.getElementById('row1-title').value = homeData.row1.title || '';
+                        const row1Select = document.getElementById('row1-products');
+                        row1Select.innerHTML = '';
+                        if (productsData.success) {
+                            productsData.products.forEach(product => {
+                                const option = document.createElement('option');
+                                option.value = product._id;
+                                option.textContent = `${product.name} - $${product.price}`;
+                                if (homeData.row1.products && homeData.row1.products.includes(product._id)) option.selected = true;
+                                row1Select.appendChild(option);
+                            });
+                        }
                     }
-                }
-                if (row2Data.success) {
-                    document.getElementById('row2-title').value = row2Data.title || '';
-                    const row2Select = document.getElementById('row2-products');
-                    row2Select.innerHTML = '';
-                    if (productsData.success) {
-                        productsData.products.forEach(product => {
-                            const option = document.createElement('option');
-                            option.value = product._id;
-                            option.textContent = `${product.name} - $${product.price}`;
-                            if (row2Data.products.some(p => p._id === product._id)) option.selected = true;
-                            row2Select.appendChild(option);
-                        });
+
+                    // Row 2
+                    if (homeData.row2) {
+                        document.getElementById('row2-title').value = homeData.row2.title || '';
+                        const row2Select = document.getElementById('row2-products');
+                        row2Select.innerHTML = '';
+                        if (productsData.success) {
+                            productsData.products.forEach(product => {
+                                const option = document.createElement('option');
+                                option.value = product._id;
+                                option.textContent = `${product.name} - $${product.price}`;
+                                if (homeData.row2.products && homeData.row2.products.includes(product._id)) option.selected = true;
+                                row2Select.appendChild(option);
+                            });
+                        }
                     }
                 }
             } catch (error) {
@@ -138,7 +151,7 @@
                 const data = await response.json();
                 if (data.success) {
                     alert('Row 1 updated successfully');
-                    loadConfig(); // Reload to reflect changes
+                    loadConfig();
                 } else {
                     alert(data.message || 'Failed to update row 1');
                 }
@@ -164,7 +177,7 @@
                 const data = await response.json();
                 if (data.success) {
                     alert('Row 2 updated successfully');
-                    loadConfig(); // Reload to reflect changes
+                    loadConfig();
                 } else {
                     alert(data.message || 'Failed to update row 2');
                 }
@@ -174,8 +187,13 @@
             }
         });
 
-        checkAdmin();
-        loadConfig();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                loadConfig();
+            }
+        });
     </script>
 </body>
 </html>
