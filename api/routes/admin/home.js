@@ -3,14 +3,16 @@ const jwt = require('jsonwebtoken');
 const connectDB = require('../../db');
 const router = express.Router();
 
-const JWT_SECRET = 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_fallback';
 
 function authenticateAdmin(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
+  
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err || user.role !== 'admin') return res.status(403).json({ success: false, message: 'Access denied' });
+    if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
+    if (user.role !== 'admin') return res.status(403).json({ success: false, message: 'Access denied. Admin role required.' });
     req.user = user;
     next();
   });
