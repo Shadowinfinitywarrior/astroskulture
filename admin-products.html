@@ -13,9 +13,11 @@
         </div>
         <div class="menu-toggle">☰</div>
         <ul class="nav-links">
+            <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
             <li><a href="admin-products.html">Products</a></li>
             <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="admin-users.html">Users</a></li>
             <li><a href="#" onclick="logout()">Logout</a></li>
         </ul>
     </nav>
@@ -51,18 +53,22 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
-                return;
+                return false;
             }
             try {
                 const response = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                if (!data.success || data.user.role !== 'admin') {
+                // FIX: Changed from data.user.role to data.data.role
+                if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
+                    return false;
                 }
+                return true;
             } catch (error) {
                 window.location.href = 'login.html';
+                return false;
             }
         }
 
@@ -75,13 +81,13 @@
                 if (data.success) {
                     document.getElementById('products').innerHTML = data.products.map(product => `
                         <div class="product-item">
-                            <p>Name: ${product.name}</p>
-                            <p>Category: ${product.category}</p>
-                            <p>Price: $${product.price.toFixed(2)}</p>
-                            <p>Images: ${product.images.join(', ') || 'No images'}</p>
-                            <p>Description: ${product.description || 'No description'}</p>
-                            <p>Created At: ${new Date(product.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                            <button class="btn" onclick="editProduct('${product._id}', '${product.name}', '${product.category}', ${product.price}, '${product.images.join(', ')}', '${product.description || ''}')">Edit</button>
+                            <p><strong>Name:</strong> ${product.name}</p>
+                            <p><strong>Category:</strong> ${product.category}</p>
+                            <p><strong>Price:</strong> $${(product.price || 0).toFixed(2)}</p>
+                            <p><strong>Images:</strong> ${product.images ? product.images.join(', ') : 'No images'}</p>
+                            <p><strong>Description:</strong> ${product.description || 'No description'}</p>
+                            <p><strong>Created:</strong> ${new Date(product.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                            <button class="btn" onclick="editProduct('${product._id}', '${product.name}', '${product.category}', ${product.price}, ${JSON.stringify(product.images || [])}, '${(product.description || '').replace(/'/g, "\\'")}')">Edit</button>
                             <button class="btn" onclick="deleteProduct('${product._id}')">Delete</button>
                         </div>
                     `).join('');
@@ -97,18 +103,25 @@
         document.getElementById('product-form').addEventListener('submit', async e => {
             e.preventDefault();
             const id = document.getElementById('product-id').value;
-            const images = [document.getElementById('product-image1').value, document.getElementById('product-image2').value, document.getElementById('product-image3').value].filter(img => img.trim() !== '');
+            const images = [
+                document.getElementById('product-image1').value,
+                document.getElementById('product-image2').value,
+                document.getElementById('product-image3').value
+            ].filter(img => img.trim() !== '');
+            
             const product = {
                 name: document.getElementById('product-name').value.trim(),
                 category: document.getElementById('product-category').value.trim(),
                 price: parseFloat(document.getElementById('product-price').value),
-                images,
+                images: images,
                 description: document.getElementById('product-description').value.trim()
             };
+            
             if (product.price < 0) {
                 alert('Price cannot be negative');
                 return;
             }
+            
             try {
                 const method = id ? 'PUT' : 'POST';
                 const url = id ? `/api/admin/products/${id}` : '/api/admin/products';
@@ -139,10 +152,13 @@
             document.getElementById('product-name').value = name;
             document.getElementById('product-category').value = category;
             document.getElementById('product-price').value = price;
-            const imageArray = images.split(', ');
+            
+            // Handle images array properly
+            const imageArray = Array.isArray(images) ? images : [];
             document.getElementById('product-image1').value = imageArray[0] || '';
             document.getElementById('product-image2').value = imageArray[1] || '';
             document.getElementById('product-image3').value = imageArray[2] || '';
+            
             document.getElementById('product-description').value = description;
             document.getElementById('product-submit').textContent = 'Update Product';
         }
@@ -174,8 +190,13 @@
             }
         }
 
-        checkAdmin();
-        loadProducts();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                loadProducts();
+            }
+        });
     </script>
 </body>
 </html>
