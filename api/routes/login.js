@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const connectDB = require('../db');
 const router = express.Router();
 
-const JWT_SECRET = 'your_jwt_secret'; // Replace with secure key in production
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_fallback';
 
 router.post('/', async (req, res) => {
   try {
@@ -21,8 +21,22 @@ router.post('/', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ success: true, token, user: { name: user.name, email: user.email, role: user.role } });
+    const token = jwt.sign({ 
+      id: user._id.toString(), 
+      email: user.email, 
+      role: user.role 
+    }, JWT_SECRET, { expiresIn: '24h' });
+
+    res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user._id.toString(),
+        name: user.name, 
+        email: user.email, 
+        role: user.role 
+      } 
+    });
   } catch (error) {
     console.error('Error in /api/login:', error);
     res.status(500).json({ success: false, message: 'Server error' });
