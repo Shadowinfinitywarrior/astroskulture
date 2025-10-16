@@ -62,7 +62,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const category = urlParams.get('category') || '';
             try {
-                let url = `http://localhost:3000/api/products${category ? `?category=${category}` : ''}`;
+                let url = `/api/products${category ? `?category=${category}` : ''}`;
                 const sort = document.getElementById('sort').value;
                 if (sort) url += `${category ? '&' : '?'}sort=${sort}`;
                 const response = await fetch(url);
@@ -110,7 +110,7 @@
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const category = urlParams.get('category') || '';
-                const response = await fetch(`http://localhost:3000/api/products/search?query=${searchTerm}${category ? `&category=${category}` : ''}`);
+                const response = await fetch(`/api/products/search?query=${searchTerm}${category ? `&category=${category}` : ''}`);
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('category-title').textContent = `Search Results for "${searchTerm}"`;
