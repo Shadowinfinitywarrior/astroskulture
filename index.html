@@ -71,7 +71,7 @@
         updateAccountMenu();
         async function loadProductRows() {
             try {
-                const response = await fetch('http://localhost:3000/api/home');
+                const response = await fetch('/api/home');
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('row1-title').textContent = data.row1.title;
