@@ -63,7 +63,7 @@
             const row = urlParams.get('row');
             if (!row) return;
             try {
-                const response = await fetch(`http://localhost:3000/api/home?row=${row}`);
+                const response = await fetch(`/api/home?row=${row}`);
                 const data = await response.json();
                 if (data.success && data.products) {
                     document.getElementById('category-title').textContent = data.title;
