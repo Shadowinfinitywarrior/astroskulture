@@ -39,7 +39,7 @@
         <div id="user-info"></div>
         <h3>Your Orders</h3>
         <div id="orders"></div>
-        <button onclick="logout()">Logout</button>
+        <button onclick="logout()" class="logout-btn">Logout</button>
     </section>
 
     <footer>
@@ -54,39 +54,54 @@
     <script src="script.js"></script>
     <script>
         updateAccountMenu();
+        
         async function loadAccount() {
             const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
+            
             try {
                 const response = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
+                
                 if (data.success) {
+                    // Use data.data instead of data.user
+                    const userData = data.data || {};
                     document.getElementById('user-info').innerHTML = `
-                        <p>Name: ${data.user.name || 'Not provided'}</p>
-                        <p>Email: ${data.user.email || 'Not provided'}</p>
-                        <p>Joined: ${new Date(data.user.createdAt).toLocaleDateString()}</p>
+                        <div class="user-info-card">
+                            <p><strong>Name:</strong> ${userData.name || 'Not provided'}</p>
+                            <p><strong>Email:</strong> ${userData.email || 'Not provided'}</p>
+                            <p><strong>Role:</strong> ${userData.role || 'customer'}</p>
+                        </div>
                     `;
-                    const ordersResponse = await fetch('/api/orders', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const ordersData = await ordersResponse.json();
-                    if (ordersData.success) {
-                        document.getElementById('orders').innerHTML = ordersData.orders.map(order => `
-                            <div class="order">
-                                <p>Order ID: ${order._id}</p>
-                                <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                                <p>Total: $${order.total.toFixed(2)}</p>
-                                <p>Status: ${order.status}</p>
-                                <p>Items: ${Object.entries(order.items).map(([id, qty]) => `${id} (x${qty})`).join(', ')}</p>
-                            </div>
-                        `).join('');
-                    } else {
-                        document.getElementById('orders').innerHTML = '<p>No orders found.</p>';
+                    
+                    // Load orders
+                    try {
+                        const ordersResponse = await fetch('/api/orders', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const ordersData = await ordersResponse.json();
+                        
+                        if (ordersData.success && ordersData.orders && ordersData.orders.length > 0) {
+                            document.getElementById('orders').innerHTML = ordersData.orders.map(order => `
+                                <div class="order-card">
+                                    <p><strong>Order ID:</strong> ${order._id || 'N/A'}</p>
+                                    <p><strong>Date:</strong> ${new Date(order.createdAt || Date.now()).toLocaleDateString()}</p>
+                                    <p><strong>Total:</strong> $${(order.total || 0).toFixed(2)}</p>
+                                    <p><strong>Status:</strong> ${order.status || 'pending'}</p>
+                                    <p><strong>Items:</strong> ${order.items ? Object.entries(order.items).map(([id, qty]) => `${id} (x${qty})`).join(', ') : 'No items'}</p>
+                                </div>
+                            `).join('');
+                        } else {
+                            document.getElementById('orders').innerHTML = '<p>No orders found.</p>';
+                        }
+                    } catch (orderError) {
+                        console.error('Error loading orders:', orderError);
+                        document.getElementById('orders').innerHTML = '<p>Unable to load orders at this time.</p>';
                     }
                 } else {
                     alert(data.message || 'Failed to load account');
@@ -98,6 +113,7 @@
                 document.getElementById('orders').innerHTML = '<p>Unable to load orders.</p>';
             }
         }
+
         loadAccount();
     </script>
 </body>
