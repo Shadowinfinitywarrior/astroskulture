@@ -13,9 +13,11 @@
         </div>
         <div class="menu-toggle">☰</div>
         <ul class="nav-links">
+            <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
             <li><a href="admin-products.html">Products</a></li>
             <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="admin-users.html">Users</a></li>
             <li><a href="#" onclick="logout()">Logout</a></li>
         </ul>
     </nav>
@@ -40,18 +42,22 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
-                return;
+                return false;
             }
             try {
                 const response = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                if (!data.success || data.user.role !== 'admin') {
+                // FIX: Changed from data.user.role to data.data.role
+                if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
+                    return false;
                 }
+                return true;
             } catch (error) {
                 window.location.href = 'login.html';
+                return false;
             }
         }
 
@@ -64,17 +70,17 @@
                 if (data.success) {
                     document.getElementById('orders').innerHTML = data.orders.map(order => `
                         <div class="order">
-                            <p>Order ID: ${order._id}</p>
-                            <p>User: ${order.userEmail}</p>
-                            <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                            <p>Total: $${order.total.toFixed(2)}</p>
-                            <p>Status: ${order.status}</p>
-                            <p>Items: ${Object.entries(order.items).map(([id, qty]) => `${id} (x${qty})`).join(', ')}</p>
+                            <p><strong>Order ID:</strong> ${order._id}</p>
+                            <p><strong>User:</strong> ${order.userEmail || 'N/A'}</p>
+                            <p><strong>Date:</strong> ${new Date(order.createdAt || Date.now()).toLocaleDateString()}</p>
+                            <p><strong>Total:</strong> $${(order.total || 0).toFixed(2)}</p>
+                            <p><strong>Status:</strong> ${order.status || 'pending'}</p>
+                            <p><strong>Items:</strong> ${order.items ? Object.entries(order.items).map(([id, qty]) => `${id} (x${qty})`).join(', ') : 'No items'}</p>
                             <select class="status-select" id="status-${order._id}">
-                                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                <option value="pending" ${(order.status || 'pending') === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="shipped" ${(order.status || 'pending') === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="delivered" ${(order.status || 'pending') === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${(order.status || 'pending') === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                             <button class="btn" onclick="updateOrderStatus('${order._id}')">Update Status</button>
                         </div>
@@ -112,8 +118,13 @@
             }
         }
 
-        checkAdmin();
-        loadOrders();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                loadOrders();
+            }
+        });
     </script>
 </body>
 </html>
