@@ -1,12 +1,29 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const connectDB = require('../../db');
-const { authenticateToken } = require('../auth/me'); // Import the authenticateToken function
+const { authenticateToken } = require('../auth/me');
 
 const router = express.Router();
 
+// Admin authentication middleware
+function authenticateAdmin(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
+  
+  const jwt = require('jsonwebtoken');
+  const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_fallback';
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
+    if (user.role !== 'admin') return res.status(403).json({ success: false, message: 'Access denied. Admin role required.' });
+    req.user = user;
+    next();
+  });
+}
+
 // GET all orders
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateAdmin, async (req, res) => {
   try {
     const db = await connectDB();
     const orders = await db.collection('orders').find({}).toArray();
@@ -17,7 +34,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // PUT update order status
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const { status } = req.body;
     const db = await connectDB();
