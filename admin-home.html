@@ -75,7 +75,7 @@
             try {
                 const token = localStorage.getItem('token');
                 const [row1Response, row2Response, productsResponse] = await Promise.all([
-                    fetch('http://localhost:3000/api/home?row=row1', {
+                    fetch('/api/home?row=row1', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }),
                     fetch('http://localhost:3000/api/home?row=row2', {
@@ -127,7 +127,7 @@
             const title = document.getElementById('row1-title').value;
             const products = Array.from(document.getElementById('row1-products').selectedOptions).map(opt => opt.value);
             try {
-                const response = await fetch('http://localhost:3000/api/admin/home', {
+                const response = await fetch('/api/admin/home', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -153,7 +153,7 @@
             const title = document.getElementById('row2-title').value;
             const products = Array.from(document.getElementById('row2-products').selectedOptions).map(opt => opt.value);
             try {
-                const response = await fetch('http://localhost:3000/api/admin/home', {
+                const response = await fetch('/api/admin/home', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
