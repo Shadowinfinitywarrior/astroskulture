@@ -5,9 +5,9 @@ const { ObjectId } = require('mongodb');
 const connectDB = require('../../db');
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_fallback';
 
-// Middleware function - make sure this is defined
+// Middleware function
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -35,7 +35,12 @@ router.get('/', authenticateToken, async (req, res) => {
     res.json({
       success: true,
       message: 'User data retrieved successfully',
-      data: { name: userDoc.name, email: userDoc.email, role: userDoc.role }
+      data: { 
+        id: userDoc._id.toString(),
+        name: userDoc.name, 
+        email: userDoc.email, 
+        role: userDoc.role 
+      }
     });
   } catch (error) {
     console.error('Error in /api/auth/me:', error);
