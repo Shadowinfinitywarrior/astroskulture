@@ -1,15 +1,27 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const connectDB = require('../../db');
-const me = require('../auth/me'); // This should export the authenticateToken middleware
-
 const router = express.Router();
 
-// Use the authenticateToken from the me module
-const authenticateToken = me.authenticateToken || me;
+// Admin authentication middleware
+function authenticateAdmin(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
+  
+  const jwt = require('jsonwebtoken');
+  const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_fallback';
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
+    if (user.role !== 'admin') return res.status(403).json({ success: false, message: 'Access denied. Admin role required.' });
+    req.user = user;
+    next();
+  });
+}
 
 // GET all products
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateAdmin, async (req, res) => {
   try {
     const db = await connectDB();
     const products = await db.collection('products').find({}).toArray();
@@ -20,7 +32,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // POST add product
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateAdmin, async (req, res) => {
   try {
     const { name, category, price, images, description } = req.body;
     const db = await connectDB();
@@ -29,22 +41,23 @@ router.post('/', authenticateToken, async (req, res) => {
       category, 
       price: parseFloat(price), 
       images, 
-      description 
+      description,
+      createdAt: new Date()
     });
-    res.json({ success: true, product: result.ops[0] });
+    res.json({ success: true, product: { ...req.body, _id: result.insertedId } });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // PUT edit product
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const { name, category, price, images, description } = req.body;
     const db = await connectDB();
     const result = await db.collection('products').updateOne(
       { _id: new ObjectId(req.params.id) },
-      { $set: { name, category, price: parseFloat(price), images, description } }
+      { $set: { name, category, price: parseFloat(price), images, description, updatedAt: new Date() } }
     );
     if (result.modifiedCount === 1) {
       res.json({ success: true, message: 'Product updated' });
@@ -57,7 +70,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE product
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = await connectDB();
     const result = await db.collection('products').deleteOne({ _id: new ObjectId(req.params.id) });
