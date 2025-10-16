@@ -1,7 +1,7 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const connectDB = require('../../db');
-const authenticateToken = require('../../middleware/auth');
+const { authenticateToken } = require('../auth/me'); // Import the authenticateToken function
 
 const router = express.Router();
 
