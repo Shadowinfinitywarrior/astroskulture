@@ -13,6 +13,7 @@
         </div>
         <div class="menu-toggle">☰</div>
         <ul class="nav-links">
+            <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
             <li><a href="admin-products.html">Products</a></li>
             <li><a href="admin-orders.html">Orders</a></li>
@@ -25,7 +26,7 @@
         <h2>Manage Users</h2>
         <div id="users" class="products-grid"></div>
         <div id="error-message" class="error-message hidden">
-            <p>Error loading users: The server returned a 404 (Not Found) error at 01:36 AM IST, Thursday, October 16, 2025. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.</p>
+            <p>Error loading users: The server returned a 404 (Not Found) error. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.</p>
         </div>
     </section>
 
@@ -44,19 +45,23 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
-                return;
+                return false;
             }
             try {
                 const response = await fetch('/api/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                if (!data.success || data.user.role !== 'admin') {
+                // FIX: Changed from data.user.role to data.data.role
+                if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
+                    return false;
                 }
+                return true;
             } catch (error) {
                 console.error('Error checking admin:', error);
                 window.location.href = 'login.html';
+                return false;
             }
         }
 
@@ -77,11 +82,11 @@
                 if (data.success) {
                     usersDiv.innerHTML = data.users.map(user => `
                         <div class="product-item">
-                            <p>ID: ${user._id}</p>
-                            <p>Name: ${user.name || 'Not provided'}</p>
-                            <p>Email: ${user.email}</p>
-                            <p>Role: ${user.role}</p>
-                            <p>Created At: ${new Date(user.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                            <p><strong>ID:</strong> ${user._id}</p>
+                            <p><strong>Name:</strong> ${user.name || 'Not provided'}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                            <p><strong>Role:</strong> ${user.role}</p>
+                            <p><strong>Created:</strong> ${new Date(user.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                             <select class="status-select" id="role-${user._id}">
                                 <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
                                 <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
@@ -97,9 +102,9 @@
                 usersDiv.innerHTML = '';
                 errorDiv.classList.remove('hidden');
                 if (error.message.includes('404')) {
-                    errorDiv.querySelector('p').textContent = `Error loading users: The server returned a 404 (Not Found) error at 01:36 AM IST, Thursday, October 16, 2025. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
+                    errorDiv.querySelector('p').textContent = `Error loading users: The server returned a 404 (Not Found) error. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
                 } else {
-                    errorDiv.querySelector('p').textContent = `Error loading users: ${error.message} at 01:36 AM IST, Thursday, October 16, 2025. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
+                    errorDiv.querySelector('p').textContent = `Error loading users: ${error.message}. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
                 }
             }
         }
@@ -132,8 +137,13 @@
             loadUsers();
         }
 
-        checkAdmin();
-        loadUsers();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                loadUsers();
+            }
+        });
     </script>
 </body>
 </html>
