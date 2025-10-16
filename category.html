@@ -108,7 +108,7 @@
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const row = urlParams.get('row');
-                const response = await fetch(`http://localhost:3000/api/products/search?query=${searchTerm}&row=${row}`);
+                const response = await fetch(`/api/products/search?query=${searchTerm}&row=${row}`);
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('category-title').textContent = `Search Results for "${searchTerm}"`;
