@@ -1,9 +1,12 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const connectDB = require('../../db');
-const auth = require('../../auth/me'); // Assume middleware for admin check
+const me = require('../auth/me'); // This should export the authenticateToken middleware
 
 const router = express.Router();
+
+// Use the authenticateToken from the me module
+const authenticateToken = me.authenticateToken || me;
 
 // GET all products
 router.get('/', authenticateToken, async (req, res) => {
@@ -21,7 +24,13 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, category, price, images, description } = req.body;
     const db = await connectDB();
-    const result = await db.collection('products').insertOne({ name, category, price: parseFloat(price), images, description });
+    const result = await db.collection('products').insertOne({ 
+      name, 
+      category, 
+      price: parseFloat(price), 
+      images, 
+      description 
+    });
     res.json({ success: true, product: result.ops[0] });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
