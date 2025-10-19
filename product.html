@@ -36,7 +36,11 @@
 
     <section class="product-details fade-in">
         <div class="product-container" id="product-container">
-            <!-- Product content will be dynamically loaded here -->
+            <!-- Loading state -->
+            <div id="loading" class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading product...</p>
+            </div>
         </div>
     </section>
 
@@ -61,10 +65,11 @@
         updateAccountMenu();
         
         async function loadProduct() {
+            showLoading();
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
             if (!id) {
-                document.getElementById('product-container').innerHTML = '<p>Product not found.</p>';
+                showError('Product not found.');
                 return;
             }
             
@@ -75,17 +80,19 @@
                     displayProduct(data.product);
                     loadRecommendedProducts(data.product.category, id);
                 } else {
-                    document.getElementById('product-container').innerHTML = '<p>Product not found.</p>';
+                    showError('Product not found.');
                 }
             } catch (error) {
                 console.error('Error loading product:', error);
-                document.getElementById('product-container').innerHTML = '<p>Error loading product. Please try again.</p>';
+                showError('Error loading product. Please try again.');
+            } finally {
+                hideLoading();
             }
         }
 
         function displayProduct(product) {
             const images = product.images && product.images.length ? product.images : ['logo.png'];
-            const isInStock = product.stock > 0;
+            const isInStock = (product.stock || 0) > 0;
             
             // Calculate discount if original price exists
             let discountHtml = '';
@@ -97,46 +104,55 @@
                 `;
             }
 
-            // Build details list
+            // Build details list from array
             const detailsHtml = product.details && product.details.length ? 
                 `<ul>${product.details.map(detail => `<li>${detail}</li>`).join('')}</ul>` : 
                 '<p>No details available.</p>';
 
-            // Build care instructions
+            // Build care instructions from array
             const careHtml = product.careInstructions && product.careInstructions.length ? 
                 `<ul>${product.careInstructions.map(care => `<li>${care}</li>`).join('')}</ul>` : 
                 '<p>No care instructions available.</p>';
+
+            // Use detailedDescription if available, fallback to description
+            const descriptionHtml = product.detailedDescription ? 
+                product.detailedDescription : 
+                (product.description ? `<p>${product.description}</p>` : '<p>No description available.</p>');
 
             document.getElementById('product-container').innerHTML = `
                 <div class="product-main">
                     <div class="image-section">
                         <div class="main-image">
-                            <img id="main-product-image" src="${images[0]}" alt="${product.name}" onerror="this.src='logo.png'">
+                            <img id="main-product-image" src="${images[0]}" alt="${product.name}" 
+                                 onerror="handleImageError(this, 'logo.png')">
                         </div>
+                        ${images.length > 1 ? `
                         <div class="thumbnail-gallery">
                             ${images.map((img, index) => `
                                 <img src="${img}" alt="Thumbnail ${index + 1}" 
                                      class="thumbnail ${index === 0 ? 'active' : ''}" 
-                                     onclick="changeMainImage('${img}')"
+                                     onclick="changeMainImage(this)"
                                      onerror="this.style.display='none'">
                             `).join('')}
                         </div>
+                        ` : ''}
                     </div>
                     
                     <div class="details-section">
                         <h1 class="product-title">${product.name}</h1>
                         
                         <div class="price-section">
-                            <span class="current-price">₹${product.price.toFixed(2)}</span>
+                            <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
                             ${discountHtml}
                         </div>
                         
                         <div class="stock-status ${isInStock ? 'in-stock' : 'sold-out'}">
                             ${isInStock ? 'In Stock' : 'Sold Out'}
+                            ${isInStock && product.stock <= 10 ? `<span class="low-stock-warning"> (Only ${product.stock} left!)</span>` : ''}
                         </div>
                         
                         <div class="action-buttons">
-                            <button class="btn buy-now-btn" onclick="addToCart('${product._id}')" ${!isInStock ? 'disabled' : ''}>
+                            <button class="btn buy-now-btn" onclick="buyNow('${product._id}')" ${!isInStock ? 'disabled' : ''}>
                                 ${isInStock ? 'Buy Now' : 'Sold Out'}
                             </button>
                             <button class="btn add-to-cart-btn" onclick="addToCart('${product._id}')" ${!isInStock ? 'disabled' : ''}>
@@ -144,27 +160,34 @@
                             </button>
                         </div>
                         
+                        ${(product.color || product.fabric || product.printType || product.deliveryTime) ? `
                         <div class="product-meta">
-                            ${product.color ? `<p><strong>Color:</strong> ${product.color}</p>` : ''}
-                            ${product.fabric ? `<p><strong>Fabric:</strong> ${product.fabric}</p>` : ''}
-                            ${product.printType ? `<p><strong>Print Type:</strong> ${product.printType}</p>` : ''}
-                            ${product.deliveryTime ? `<p><strong>Delivery:</strong> ${product.deliveryTime}</p>` : ''}
+                            ${product.color ? `<p><strong>Color:</strong> <span class="meta-value">${product.color}</span></p>` : ''}
+                            ${product.fabric ? `<p><strong>Fabric:</strong> <span class="meta-value">${product.fabric}</span></p>` : ''}
+                            ${product.printType ? `<p><strong>Print Type:</strong> <span class="meta-value">${product.printType}</span></p>` : ''}
+                            ${product.deliveryTime ? `<p><strong>Delivery:</strong> <span class="meta-value">${product.deliveryTime}</span></p>` : ''}
                         </div>
+                        ` : ''}
                     </div>
                 </div>
                 
                 <div class="product-info-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('description')">Description</button>
+                        <button class="tab-btn" onclick="switchTab('details')">Product Details</button>
+                        <button class="tab-btn" onclick="switchTab('care')">Care Instructions</button>
+                    </div>
+                    
                     <div class="tab-content">
                         <div class="tab-panel active" id="description">
                             <h3>Description</h3>
                             <div class="description-content">
-                                ${product.detailedDescription ? product.detailedDescription : 
-                                  (product.description ? `<p>${product.description}</p>` : '<p>No description available.</p>')}
+                                ${descriptionHtml}
                             </div>
                         </div>
                         
                         <div class="tab-panel" id="details">
-                            <h3>Details</h3>
+                            <h3>Product Details</h3>
                             <div class="details-content">
                                 ${detailsHtml}
                             </div>
@@ -183,19 +206,81 @@
             addToRecentlyViewed(product._id);
         }
 
-        function changeMainImage(imageSrc) {
+        function changeMainImage(thumb) {
             const mainImage = document.getElementById('main-product-image');
-            if (mainImage) {
-                mainImage.src = imageSrc;
+            if (mainImage && thumb.src) {
+                mainImage.src = thumb.src;
+                
+                // Add fade transition
+                mainImage.style.opacity = '0';
+                setTimeout(() => {
+                    mainImage.style.opacity = '1';
+                }, 150);
             }
             
             // Update active thumbnail
             document.querySelectorAll('.thumbnail').forEach(thumb => {
                 thumb.classList.remove('active');
-                if (thumb.src.includes(imageSrc)) {
-                    thumb.classList.add('active');
-                }
             });
+            thumb.classList.add('active');
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab panel
+            const activePanel = document.getElementById(tabName);
+            if (activePanel) {
+                activePanel.classList.add('active');
+            }
+            
+            // Activate selected tab button
+            const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+        }
+
+        function buyNow(productId) {
+            addToCart(productId);
+            window.location.href = 'cart.html';
+        }
+
+        function handleImageError(img, fallbackSrc) {
+            img.src = fallbackSrc;
+            img.onerror = null; // Prevent infinite loop
+        }
+
+        function showLoading() {
+            const container = document.getElementById('product-container');
+            container.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading product...</p>
+                </div>
+            `;
+        }
+
+        function hideLoading() {
+            // Loading is handled by the displayProduct function
+        }
+
+        function showError(message) {
+            document.getElementById('product-container').innerHTML = `
+                <div class="error-state">
+                    <h3>Product Not Found</h3>
+                    <p>${message}</p>
+                    <button class="btn" onclick="window.location.href='shop.html'">Continue Shopping</button>
+                </div>
+            `;
         }
 
         async function loadRecommendedProducts(category, currentProductId) {
@@ -203,11 +288,18 @@
                 const response = await fetch(`/api/products?category=${category}`);
                 const data = await response.json();
                 if (data.success) {
-                    const recommended = data.products.filter(p => p._id !== currentProductId).slice(0, 4);
+                    const recommended = data.products
+                        .filter(p => p._id !== currentProductId)
+                        .slice(0, 4);
                     displayRecommendedProducts(recommended);
                 }
             } catch (error) {
                 console.error('Error loading recommended products:', error);
+                document.getElementById('recommended-products').innerHTML = `
+                    <div class="error-state">
+                        <p>Unable to load recommendations</p>
+                    </div>
+                `;
             }
         }
 
@@ -216,46 +308,53 @@
             if (!container) return;
             
             if (products.length === 0) {
-                container.innerHTML = '<p>No recommended products found.</p>';
+                container.innerHTML = '<p class="no-recommendations">No recommended products found.</p>';
                 return;
             }
             
-            container.innerHTML = products.map(product => `
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
-                             alt="${product.name}" 
-                             onerror="this.src='logo.png'"
-                             onclick="window.location.href='product.html?id=${product._id}'">
-                        ${product.originalPrice && product.originalPrice > product.price ? 
-                            `<div class="discount-badge">
-                                ${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                            </div>` : ''
-                        }
-                    </div>
-                    <div class="product-info">
-                        <h3>${product.name}</h3>
-                        <div class="price">
-                            <span class="current-price">₹${product.price.toFixed(2)}</span>
-                            ${product.originalPrice && product.originalPrice > product.price ? 
-                                `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
-                            }
+            container.innerHTML = products.map(product => {
+                const discount = product.originalPrice && product.originalPrice > product.price ? 
+                    Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+                
+                return `
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
+                                 alt="${product.name}" 
+                                 onerror="this.src='logo.png'"
+                                 onclick="window.location.href='product.html?id=${product._id}'">
+                            ${discount > 0 ? `
+                                <div class="discount-badge">
+                                    ${discount}% OFF
+                                </div>
+                            ` : ''}
+                            <div class="stock-badge ${(product.stock || 0) > 0 ? 'in-stock' : 'out-of-stock'}">
+                                ${(product.stock || 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                            </div>
                         </div>
-                        <button class="btn view-product-btn" onclick="window.location.href='product.html?id=${product._id}'">
-                            View Product
-                        </button>
+                        <div class="product-info">
+                            <h3>${product.name}</h3>
+                            <div class="price">
+                                <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
+                                ${product.originalPrice && product.originalPrice > product.price ? 
+                                    `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
+                                }
+                            </div>
+                            <button class="btn view-product-btn" onclick="window.location.href='product.html?id=${product._id}'">
+                                View Product
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function addToRecentlyViewed(productId) {
             let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-            if (!recentlyViewed.includes(productId)) {
-                recentlyViewed.unshift(productId);
-                recentlyViewed = recentlyViewed.slice(0, 10);
-                localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
-            }
+            recentlyViewed = recentlyViewed.filter(id => id !== productId);
+            recentlyViewed.unshift(productId);
+            recentlyViewed = recentlyViewed.slice(0, 10);
+            localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
         }
 
         // Initialize product page
