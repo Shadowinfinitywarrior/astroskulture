@@ -26,14 +26,59 @@
         <h2>Manage Products</h2>
         <form id="product-form" class="home-config-form slide-in-left">
             <input type="hidden" id="product-id">
-            <input type="text" id="product-name" placeholder="Product Name" required>
-            <input type="text" id="product-category" placeholder="Category (oversized/normal)" required>
-            <input type="number" id="product-price" placeholder="Price" step="0.01" min="0" required>
-            <input type="text" id="product-image1" placeholder="Image URL 1">
-            <input type="text" id="product-image2" placeholder="Image URL 2">
-            <input type="text" id="product-image3" placeholder="Image URL 3">
-            <textarea id="product-description" placeholder="Description"></textarea>
+            
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h3>Basic Information</h3>
+                <input type="text" id="product-name" placeholder="Product Name" required>
+                <input type="text" id="product-category" placeholder="Category (oversized/normal)" required>
+                <input type="number" id="product-price" placeholder="Current Price" step="0.01" min="0" required>
+                <input type="number" id="product-original-price" placeholder="Original Price (for discount)" step="0.01" min="0">
+                <input type="number" id="product-stock" placeholder="Stock Quantity" min="0" value="0" required>
+            </div>
+
+            <!-- Product Images -->
+            <div class="form-section">
+                <h3>Product Images</h3>
+                <input type="text" id="product-image1" placeholder="Image URL 1">
+                <input type="text" id="product-image2" placeholder="Image URL 2">
+                <input type="text" id="product-image3" placeholder="Image URL 3">
+                <input type="text" id="product-image4" placeholder="Image URL 4">
+                <input type="text" id="product-image5" placeholder="Image URL 5">
+            </div>
+
+            <!-- Product Description -->
+            <div class="form-section">
+                <h3>Product Description</h3>
+                <textarea id="product-description" placeholder="Short Description"></textarea>
+                <textarea id="product-detailed-description" placeholder="Detailed Description (supports HTML)"></textarea>
+            </div>
+
+            <!-- Product Details -->
+            <div class="form-section">
+                <h3>Product Details</h3>
+                <textarea id="product-details" placeholder="Enter product details, one per line"></textarea>
+                <small>Example: Unisex, Oversized Comfort Fit</small>
+            </div>
+
+            <!-- Care Instructions -->
+            <div class="form-section">
+                <h3>Care Instructions</h3>
+                <textarea id="product-care-instructions" placeholder="Enter care instructions, one per line"></textarea>
+                <small>Example: Machine Reverse Wash</small>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="form-section">
+                <h3>Additional Information</h3>
+                <input type="text" id="product-color" placeholder="Color">
+                <input type="text" id="product-fabric" placeholder="Fabric (e.g., 250-260 GSM Looper Cotton)">
+                <input type="text" id="product-print-type" placeholder="Print Type (e.g., High Density Puff Print)">
+                <input type="text" id="product-delivery-time" placeholder="Delivery Time (e.g., 5-7 days)">
+            </div>
+
             <button type="submit" id="product-submit">Add Product</button>
+            <button type="button" onclick="resetProductForm()">Reset Form</button>
         </form>
         <div id="products" class="products-grid"></div>
     </section>
@@ -60,7 +105,6 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                // FIX: Changed from data.user.role to data.data.role
                 if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
                     return false;
@@ -81,14 +125,31 @@
                 if (data.success) {
                     document.getElementById('products').innerHTML = data.products.map(product => `
                         <div class="product-item">
-                            <p><strong>Name:</strong> ${product.name}</p>
-                            <p><strong>Category:</strong> ${product.category}</p>
-                            <p><strong>Price:</strong> $${(product.price || 0).toFixed(2)}</p>
-                            <p><strong>Images:</strong> ${product.images ? product.images.join(', ') : 'No images'}</p>
-                            <p><strong>Description:</strong> ${product.description || 'No description'}</p>
-                            <p><strong>Created:</strong> ${new Date(product.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                            <button class="btn" onclick="editProduct('${product._id}', '${product.name}', '${product.category}', ${product.price}, ${JSON.stringify(product.images || [])}, '${(product.description || '').replace(/'/g, "\\'")}')">Edit</button>
-                            <button class="btn" onclick="deleteProduct('${product._id}')">Delete</button>
+                            <div class="product-image">
+                                ${product.images && product.images.length > 0 ? 
+                                    `<img src="${product.images[0]}" alt="${product.name}" onerror="this.src='logo.png'">` : 
+                                    '<div class="no-image">No Image</div>'
+                                }
+                            </div>
+                            <div class="product-info">
+                                <p><strong>Name:</strong> ${product.name}</p>
+                                <p><strong>Category:</strong> ${product.category}</p>
+                                <p><strong>Price:</strong> ₹${(product.price || 0).toFixed(2)} 
+                                    ${product.originalPrice && product.originalPrice > product.price ? 
+                                        `<span style="text-decoration: line-through; color: #888;">₹${product.originalPrice.toFixed(2)}</span>
+                                         <span style="color: #ff4444; margin-left: 10px;">${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF</span>` : 
+                                        ''
+                                    }
+                                </p>
+                                <p><strong>Stock:</strong> ${product.stock || 0}</p>
+                                <p><strong>Color:</strong> ${product.color || 'N/A'}</p>
+                                <p><strong>Images:</strong> ${product.images ? product.images.length : 0} images</p>
+                                <p><strong>Created:</strong> ${new Date(product.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn" onclick="editProduct('${product._id}')">Edit</button>
+                                <button class="btn delete-btn" onclick="deleteProduct('${product._id}')">Delete</button>
+                            </div>
                         </div>
                     `).join('');
                 } else {
@@ -102,19 +163,38 @@
 
         document.getElementById('product-form').addEventListener('submit', async e => {
             e.preventDefault();
-            const id = document.getElementById('product-id').value;
+            
+            // Collect all image URLs
             const images = [
                 document.getElementById('product-image1').value,
                 document.getElementById('product-image2').value,
-                document.getElementById('product-image3').value
+                document.getElementById('product-image3').value,
+                document.getElementById('product-image4').value,
+                document.getElementById('product-image5').value
             ].filter(img => img.trim() !== '');
+            
+            // Parse details and care instructions from textarea
+            const detailsText = document.getElementById('product-details').value;
+            const details = detailsText.split('\n').filter(line => line.trim() !== '');
+            
+            const careText = document.getElementById('product-care-instructions').value;
+            const careInstructions = careText.split('\n').filter(line => line.trim() !== '');
             
             const product = {
                 name: document.getElementById('product-name').value.trim(),
                 category: document.getElementById('product-category').value.trim(),
                 price: parseFloat(document.getElementById('product-price').value),
+                originalPrice: parseFloat(document.getElementById('product-original-price').value) || null,
+                stock: parseInt(document.getElementById('product-stock').value) || 0,
                 images: images,
-                description: document.getElementById('product-description').value.trim()
+                description: document.getElementById('product-description').value.trim(),
+                detailedDescription: document.getElementById('product-detailed-description').value.trim(),
+                details: details,
+                careInstructions: careInstructions,
+                color: document.getElementById('product-color').value.trim(),
+                fabric: document.getElementById('product-fabric').value.trim(),
+                printType: document.getElementById('product-print-type').value.trim(),
+                deliveryTime: document.getElementById('product-delivery-time').value.trim()
             };
             
             if (product.price < 0) {
@@ -122,9 +202,16 @@
                 return;
             }
             
+            if (product.stock < 0) {
+                alert('Stock cannot be negative');
+                return;
+            }
+            
             try {
+                const id = document.getElementById('product-id').value;
                 const method = id ? 'PUT' : 'POST';
                 const url = id ? `/api/admin/products/${id}` : '/api/admin/products';
+                
                 const response = await fetch(url, {
                     method,
                     headers: {
@@ -133,6 +220,7 @@
                     },
                     body: JSON.stringify(product)
                 });
+                
                 const data = await response.json();
                 if (data.success) {
                     alert(id ? 'Product updated successfully' : 'Product added successfully');
@@ -147,20 +235,56 @@
             }
         });
 
-        function editProduct(id, name, category, price, images, description) {
-            document.getElementById('product-id').value = id;
-            document.getElementById('product-name').value = name;
-            document.getElementById('product-category').value = category;
-            document.getElementById('product-price').value = price;
-            
-            // Handle images array properly
-            const imageArray = Array.isArray(images) ? images : [];
-            document.getElementById('product-image1').value = imageArray[0] || '';
-            document.getElementById('product-image2').value = imageArray[1] || '';
-            document.getElementById('product-image3').value = imageArray[2] || '';
-            
-            document.getElementById('product-description').value = description;
-            document.getElementById('product-submit').textContent = 'Update Product';
+        async function editProduct(id) {
+            try {
+                const response = await fetch(`/api/admin/products/${id}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const product = data.product;
+                    
+                    document.getElementById('product-id').value = product._id;
+                    document.getElementById('product-name').value = product.name || '';
+                    document.getElementById('product-category').value = product.category || '';
+                    document.getElementById('product-price').value = product.price || '';
+                    document.getElementById('product-original-price').value = product.originalPrice || '';
+                    document.getElementById('product-stock').value = product.stock || 0;
+                    document.getElementById('product-description').value = product.description || '';
+                    document.getElementById('product-detailed-description').value = product.detailedDescription || '';
+                    document.getElementById('product-color').value = product.color || '';
+                    document.getElementById('product-fabric').value = product.fabric || '';
+                    document.getElementById('product-print-type').value = product.printType || '';
+                    document.getElementById('product-delivery-time').value = product.deliveryTime || '';
+                    
+                    // Handle images array
+                    const imageArray = Array.isArray(product.images) ? product.images : [];
+                    document.getElementById('product-image1').value = imageArray[0] || '';
+                    document.getElementById('product-image2').value = imageArray[1] || '';
+                    document.getElementById('product-image3').value = imageArray[2] || '';
+                    document.getElementById('product-image4').value = imageArray[3] || '';
+                    document.getElementById('product-image5').value = imageArray[4] || '';
+                    
+                    // Handle details array
+                    const detailsArray = Array.isArray(product.details) ? product.details : [];
+                    document.getElementById('product-details').value = detailsArray.join('\n');
+                    
+                    // Handle care instructions array
+                    const careArray = Array.isArray(product.careInstructions) ? product.careInstructions : [];
+                    document.getElementById('product-care-instructions').value = careArray.join('\n');
+                    
+                    document.getElementById('product-submit').textContent = 'Update Product';
+                    
+                    // Scroll to form
+                    document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert('Failed to load product for editing');
+                }
+            } catch (error) {
+                console.error('Error loading product for editing:', error);
+                alert('Error loading product for editing');
+            }
         }
 
         function resetProductForm() {
@@ -170,7 +294,7 @@
         }
 
         async function deleteProduct(id) {
-            if (confirm('Are you sure you want to delete this product?')) {
+            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
                 try {
                     const response = await fetch(`/api/admin/products/${id}`, {
                         method: 'DELETE',
