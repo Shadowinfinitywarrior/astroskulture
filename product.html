@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Products - Astros Kulture</title>
+    <title>Product - Astros Kulture</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,74 +13,29 @@
         </div>
         <div class="menu-toggle">☰</div>
         <ul class="nav-links">
-            <li><a href="admin.html">Dashboard</a></li>
-            <li><a href="admin-home.html">Home Config</a></li>
-            <li><a href="admin-products.html">Products</a></li>
-            <li><a href="admin-orders.html">Orders</a></li>
-            <li><a href="admin-users.html">Users</a></li>
-            <li><a href="#" onclick="logout()">Logout</a></li>
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown-parent">
+                <a href="#">Products</a>
+                <ul class="dropdown">
+                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                </ul>
+            </li>
+            <li class="dropdown-parent">
+                <a href="#">Account</a>
+                <ul class="dropdown" id="account-menu">
+                    <li><a href="login.html" class="login-link">Login</a></li>
+                    <li><a href="register.html" class="login-link">Register</a></li>
+                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                </ul>
+            </li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><input type="text" placeholder="Search" id="search"></li>
         </ul>
     </nav>
 
-    <section class="admin fade-in">
-        <h2>Manage Products</h2>
-        <form id="product-form" class="home-config-form slide-in-left">
-            <input type="hidden" id="product-id">
-            
-            <!-- Basic Information -->
-            <div class="form-section">
-                <h3>Basic Information</h3>
-                <input type="text" id="product-name" placeholder="Product Name" required>
-                <input type="text" id="product-category" placeholder="Category (oversized/normal)" required>
-                <input type="number" id="product-price" placeholder="Current Price" step="0.01" min="0" required>
-                <input type="number" id="product-original-price" placeholder="Original Price (for discount)" step="0.01" min="0">
-                <input type="number" id="product-stock" placeholder="Stock Quantity" min="0" value="0" required>
-            </div>
-
-            <!-- Product Images -->
-            <div class="form-section">
-                <h3>Product Images</h3>
-                <input type="text" id="product-image1" placeholder="Image URL 1">
-                <input type="text" id="product-image2" placeholder="Image URL 2">
-                <input type="text" id="product-image3" placeholder="Image URL 3">
-                <input type="text" id="product-image4" placeholder="Image URL 4">
-                <input type="text" id="product-image5" placeholder="Image URL 5">
-            </div>
-
-            <!-- Product Description -->
-            <div class="form-section">
-                <h3>Product Description</h3>
-                <textarea id="product-description" placeholder="Short Description"></textarea>
-                <textarea id="product-detailed-description" placeholder="Detailed Description (supports HTML)"></textarea>
-            </div>
-
-            <!-- Product Details -->
-            <div class="form-section">
-                <h3>Product Details</h3>
-                <textarea id="product-details" placeholder="Enter product details, one per line"></textarea>
-                <small>Example: Unisex, Oversized Comfort Fit</small>
-            </div>
-
-            <!-- Care Instructions -->
-            <div class="form-section">
-                <h3>Care Instructions</h3>
-                <textarea id="product-care-instructions" placeholder="Enter care instructions, one per line"></textarea>
-                <small>Example: Machine Reverse Wash</small>
-            </div>
-
-            <!-- Additional Information -->
-            <div class="form-section">
-                <h3>Additional Information</h3>
-                <input type="text" id="product-color" placeholder="Color">
-                <input type="text" id="product-fabric" placeholder="Fabric (e.g., 250-260 GSM Looper Cotton)">
-                <input type="text" id="product-print-type" placeholder="Print Type (e.g., High Density Puff Print)">
-                <input type="text" id="product-delivery-time" placeholder="Delivery Time (e.g., 5-7 days)">
-            </div>
-
-            <button type="submit" id="product-submit">Add Product</button>
-            <button type="button" onclick="resetProductForm()">Reset Form</button>
-        </form>
-        <div id="products" class="products-grid"></div>
+    <section class="product-details fade-in">
+        <div id="product"></div>
     </section>
 
     <footer>
@@ -94,233 +49,61 @@
 
     <script src="script.js"></script>
     <script>
-        async function checkAdmin() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return false;
-            }
+        updateAccountMenu();
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) return;
             try {
-                const response = await fetch('/api/auth/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await fetch(`/api/products/${id}`);
                 const data = await response.json();
-                if (!data.success || data.data.role !== 'admin') {
-                    window.location.href = 'login.html';
-                    return false;
-                }
-                return true;
-            } catch (error) {
-                window.location.href = 'login.html';
-                return false;
-            }
-        }
-
-        async function loadProducts() {
-            try {
-                const response = await fetch('/api/admin/products', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('products').innerHTML = data.products.map(product => `
-                        <div class="product-item">
-                            <div class="product-image">
-                                ${product.images && product.images.length > 0 ? 
-                                    `<img src="${product.images[0]}" alt="${product.name}" onerror="this.src='logo.png'">` : 
-                                    '<div class="no-image">No Image</div>'
-                                }
-                            </div>
-                            <div class="product-info">
-                                <p><strong>Name:</strong> ${product.name}</p>
-                                <p><strong>Category:</strong> ${product.category}</p>
-                                <p><strong>Price:</strong> ₹${(product.price || 0).toFixed(2)} 
-                                    ${product.originalPrice && product.originalPrice > product.price ? 
-                                        `<span style="text-decoration: line-through; color: #888;">₹${product.originalPrice.toFixed(2)}</span>
-                                         <span style="color: #ff4444; margin-left: 10px;">${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF</span>` : 
-                                        ''
-                                    }
-                                </p>
-                                <p><strong>Stock:</strong> ${product.stock || 0}</p>
-                                <p><strong>Color:</strong> ${product.color || 'N/A'}</p>
-                                <p><strong>Images:</strong> ${product.images ? product.images.length : 0} images</p>
-                                <p><strong>Created:</strong> ${new Date(product.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                            </div>
-                            <div class="product-actions">
-                                <button class="btn" onclick="editProduct('${product._id}')">Edit</button>
-                                <button class="btn delete-btn" onclick="deleteProduct('${product._id}')">Delete</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('products').innerHTML = '<p>No products found or access denied.</p>';
-                }
-            } catch (error) {
-                console.error('Error loading products:', error);
-                document.getElementById('products').innerHTML = '<p>Error loading products. Please try again.</p>';
-            }
-        }
-
-        document.getElementById('product-form').addEventListener('submit', async e => {
-            e.preventDefault();
-            
-            // Collect all image URLs
-            const images = [
-                document.getElementById('product-image1').value,
-                document.getElementById('product-image2').value,
-                document.getElementById('product-image3').value,
-                document.getElementById('product-image4').value,
-                document.getElementById('product-image5').value
-            ].filter(img => img.trim() !== '');
-            
-            // Parse details and care instructions from textarea
-            const detailsText = document.getElementById('product-details').value;
-            const details = detailsText.split('\n').filter(line => line.trim() !== '');
-            
-            const careText = document.getElementById('product-care-instructions').value;
-            const careInstructions = careText.split('\n').filter(line => line.trim() !== '');
-            
-            const product = {
-                name: document.getElementById('product-name').value.trim(),
-                category: document.getElementById('product-category').value.trim(),
-                price: parseFloat(document.getElementById('product-price').value),
-                originalPrice: parseFloat(document.getElementById('product-original-price').value) || null,
-                stock: parseInt(document.getElementById('product-stock').value) || 0,
-                images: images,
-                description: document.getElementById('product-description').value.trim(),
-                detailedDescription: document.getElementById('product-detailed-description').value.trim(),
-                details: details,
-                careInstructions: careInstructions,
-                color: document.getElementById('product-color').value.trim(),
-                fabric: document.getElementById('product-fabric').value.trim(),
-                printType: document.getElementById('product-print-type').value.trim(),
-                deliveryTime: document.getElementById('product-delivery-time').value.trim()
-            };
-            
-            if (product.price < 0) {
-                alert('Price cannot be negative');
-                return;
-            }
-            
-            if (product.stock < 0) {
-                alert('Stock cannot be negative');
-                return;
-            }
-            
-            try {
-                const id = document.getElementById('product-id').value;
-                const method = id ? 'PUT' : 'POST';
-                const url = id ? `/api/admin/products/${id}` : '/api/admin/products';
-                
-                const response = await fetch(url, {
-                    method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(product)
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    alert(id ? 'Product updated successfully' : 'Product added successfully');
-                    resetProductForm();
-                    loadProducts();
-                } else {
-                    alert(data.message || 'Failed to save product');
-                }
-            } catch (error) {
-                console.error('Error saving product:', error);
-                alert('Error saving product');
-            }
-        });
-
-        async function editProduct(id) {
-            try {
-                const response = await fetch(`/api/admin/products/${id}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                const data = await response.json();
-                
                 if (data.success) {
                     const product = data.product;
-                    
-                    document.getElementById('product-id').value = product._id;
-                    document.getElementById('product-name').value = product.name || '';
-                    document.getElementById('product-category').value = product.category || '';
-                    document.getElementById('product-price').value = product.price || '';
-                    document.getElementById('product-original-price').value = product.originalPrice || '';
-                    document.getElementById('product-stock').value = product.stock || 0;
-                    document.getElementById('product-description').value = product.description || '';
-                    document.getElementById('product-detailed-description').value = product.detailedDescription || '';
-                    document.getElementById('product-color').value = product.color || '';
-                    document.getElementById('product-fabric').value = product.fabric || '';
-                    document.getElementById('product-print-type').value = product.printType || '';
-                    document.getElementById('product-delivery-time').value = product.deliveryTime || '';
-                    
-                    // Handle images array
-                    const imageArray = Array.isArray(product.images) ? product.images : [];
-                    document.getElementById('product-image1').value = imageArray[0] || '';
-                    document.getElementById('product-image2').value = imageArray[1] || '';
-                    document.getElementById('product-image3').value = imageArray[2] || '';
-                    document.getElementById('product-image4').value = imageArray[3] || '';
-                    document.getElementById('product-image5').value = imageArray[4] || '';
-                    
-                    // Handle details array
-                    const detailsArray = Array.isArray(product.details) ? product.details : [];
-                    document.getElementById('product-details').value = detailsArray.join('\n');
-                    
-                    // Handle care instructions array
-                    const careArray = Array.isArray(product.careInstructions) ? product.careInstructions : [];
-                    document.getElementById('product-care-instructions').value = careArray.join('\n');
-                    
-                    document.getElementById('product-submit').textContent = 'Update Product';
-                    
-                    // Scroll to form
-                    document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
+                    const images = product.images && product.images.length ? product.images : ['logo.png'];
+                    document.getElementById('product').innerHTML = `
+                        <div class="image-gallery">
+                            ${images.map((img, index) => `
+                                <img src="${img}" alt="${product.name}" class="${index === 0 ? 'active' : ''}" onerror="this.src='logo.png';">
+                            `).join('')}
+                            <div class="thumbnail-gallery">
+                                ${images.map(img => `<img src="${img}" alt="${product.name}" onclick="changeImage(this)" onerror="this.style.display='none';">`).join('')}
+                            </div>
+                        </div>
+                        <div class="details">
+                            <h2>${product.name}</h2>
+                            <p>Price: $${product.price.toFixed(2)}</p>
+                            <p>Description: ${product.description || 'No description available'}</p>
+                            <p>Category: ${product.category || 'N/A'}</p>
+                            <button class="btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+                        </div>
+                    `;
+                    addToRecentlyViewed(id);
                 } else {
-                    alert('Failed to load product for editing');
+                    document.getElementById('product').innerHTML = '<p>Product not found.</p>';
                 }
             } catch (error) {
-                console.error('Error loading product for editing:', error);
-                alert('Error loading product for editing');
+                console.error('Error loading product:', error);
+                document.getElementById('product').innerHTML = '<p>Error loading product. Please try again.</p>';
             }
         }
 
-        function resetProductForm() {
-            document.getElementById('product-form').reset();
-            document.getElementById('product-id').value = '';
-            document.getElementById('product-submit').textContent = 'Add Product';
+        function changeImage(thumb) {
+            const gallery = document.querySelector('.image-gallery');
+            gallery.querySelector('.active').classList.remove('active');
+            const mainImg = gallery.querySelector(`img[src="${thumb.src}"]`);
+            if (mainImg) mainImg.classList.add('active');
         }
 
-        async function deleteProduct(id) {
-            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-                try {
-                    const response = await fetch(`/api/admin/products/${id}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        alert('Product deleted successfully');
-                        loadProducts();
-                    } else {
-                        alert(data.message || 'Failed to delete product');
-                    }
-                } catch (error) {
-                    console.error('Error deleting product:', error);
-                    alert('Error deleting product');
-                }
+        function addToRecentlyViewed(productId) {
+            let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            if (!recentlyViewed.includes(productId)) {
+                recentlyViewed.unshift(productId);
+                recentlyViewed = recentlyViewed.slice(0, 10); // Limit to 10 items
+                localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async function() {
-            const isAdmin = await checkAdmin();
-            if (isAdmin) {
-                loadProducts();
-            }
-        });
+        loadProduct();
     </script>
 </body>
-</html>
+</html> 
