@@ -11,7 +11,13 @@
         <div class="logo">
             <img src="logo.png" alt="Astros Kulture">
         </div>
-        <div class="menu-toggle">☰</div>
+        <div class="mobile-controls">
+            <div class="mobile-search">
+                <input type="text" placeholder="Search" id="mobile-search">
+            </div>
+            <a href="cart.html" class="mobile-cart">Cart</a>
+            <div class="menu-toggle">☰</div>
+        </div>
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li class="dropdown-parent">
@@ -19,6 +25,8 @@
                 <ul class="dropdown">
                     <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
                     <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                    <li><a href="shop.html?category=shirts">Shirts</a></li>
+                    <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
                 </ul>
             </li>
             <li class="dropdown-parent">
@@ -29,75 +37,228 @@
                     <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
                 </ul>
             </li>
-            <li><a href="cart.html">Cart</a></li>
-            <li><input type="text" placeholder="Search" id="search" onkeyup="searchProducts()"></li>
+            <li class="desktop-search">
+                <input type="text" placeholder="Search" id="search" onkeyup="searchProducts()">
+            </li>
+            <li class="desktop-cart">
+                <a href="cart.html">Cart</a>
+            </li>
         </ul>
     </nav>
 
+    <!-- Quick Categories Navigation -->
+    <section class="quick-categories">
+        <div class="category-nav">
+            <a href="shop.html" class="category-link">All</a>
+            <a href="shop.html?category=shirts" class="category-link">Shirts</a>
+            <a href="shop.html?category=pants" class="category-link">Men Cotton Pants</a>
+            <a href="shop.html?category=oversized" class="category-link">Oversized T-Shirts</a>
+        </div>
+    </section>
+
     <section class="shop-grid fade-in">
-        <h2 id="category-title"></h2>
+        <div class="category-header">
+            <h2 id="category-title">Category Products</h2>
+            <div class="results-count" id="results-count"></div>
+        </div>
+        
         <div class="filters">
             <select id="sort">
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
                 <option value="name-asc">Name: A to Z</option>
+                <option value="discount">Best Discount</option>
+                <option value="rating">Highest Rated</option>
             </select>
         </div>
+        
         <div id="products" class="products-grid"></div>
+        
+        <div class="load-more-section">
+            <button id="load-more" class="btn load-more-btn">Load More Products</button>
+        </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
-        <div class="footer-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-            <a href="#">Return Policy</a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                <p><strong>WHATSAPP:</strong> 7871658830</p>
+                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="cart.html">Cart</a>
+                <a href="account.html">Account</a>
+            </div>
+            <div class="footer-section">
+                <h3>Policies</h3>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Return Policy</a>
+                <a href="#">Shipping Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
     <script>
         updateAccountMenu();
+        let currentPage = 1;
+        const productsPerPage = 12;
+        let allProducts = [];
+
         async function loadCategoryProducts() {
             const urlParams = new URLSearchParams(window.location.search);
             const row = urlParams.get('row');
-            if (!row) return;
+            if (!row) {
+                // If no specific row, load all products
+                await loadAllProducts();
+                return;
+            }
+            
             try {
                 const response = await fetch(`/api/home?row=${row}`);
                 const data = await response.json();
                 if (data.success && data.products) {
-                    document.getElementById('category-title').textContent = data.title;
-                    displayProducts(data.products);
+                    document.getElementById('category-title').textContent = data.title || 'Category Products';
+                    allProducts = data.products;
+                    displayProducts(allProducts.slice(0, productsPerPage));
+                    updateResultsCount(allProducts.length);
                 } else {
-                    document.getElementById('products').innerHTML = '<p>No products found</p>';
+                    document.getElementById('products').innerHTML = '<p>No products found in this category</p>';
+                    updateResultsCount(0);
                 }
             } catch (error) {
                 console.error('Error loading category products:', error);
                 document.getElementById('products').innerHTML = '<p>Error loading products. Please try again.</p>';
+                updateResultsCount(0);
+            }
+        }
+
+        async function loadAllProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('category-title').textContent = 'All Products';
+                    allProducts = data.products;
+                    displayProducts(allProducts.slice(0, productsPerPage));
+                    updateResultsCount(allProducts.length);
+                } else {
+                    document.getElementById('products').innerHTML = '<p>No products found</p>';
+                    updateResultsCount(0);
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('products').innerHTML = '<p>Error loading products. Please try again.</p>';
+                updateResultsCount(0);
             }
         }
 
         function displayProducts(products) {
             const sort = document.getElementById('sort').value;
             let sortedProducts = [...products];
+            
+            // Apply sorting
             if (sort === 'price-asc') sortedProducts.sort((a, b) => a.price - b.price);
             else if (sort === 'price-desc') sortedProducts.sort((a, b) => b.price - a.price);
             else if (sort === 'name-asc') sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+            else if (sort === 'discount') {
+                sortedProducts.sort((a, b) => {
+                    const discountA = a.originalPrice ? ((a.originalPrice - a.price) / a.originalPrice) * 100 : 0;
+                    const discountB = b.originalPrice ? ((b.originalPrice - b.price) / b.originalPrice) * 100 : 0;
+                    return discountB - discountA;
+                });
+            }
+            else if (sort === 'rating') {
+                sortedProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            }
+            
             const searchTerm = document.getElementById('search').value.toLowerCase();
-            const filteredProducts = searchTerm ? sortedProducts.filter(p => p.name.toLowerCase().includes(searchTerm)) : sortedProducts;
-            document.getElementById('products').innerHTML = filteredProducts.map(product => `
-                <div class="product">
-                    <img src="${product.images[0] || 'logo.png'}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>$${product.price.toFixed(2)}</p>
-                    <a href="product.html?id=${product._id}" class="btn">View</a>
-                    <button class="btn" onclick="addToCart('${product._id}')">Add to Cart</button>
-                </div>
-            `).join('');
+            const filteredProducts = searchTerm ? 
+                sortedProducts.filter(p => p.name.toLowerCase().includes(searchTerm)) : 
+                sortedProducts;
+            
+            document.getElementById('products').innerHTML = filteredProducts.map(product => {
+                const discount = product.originalPrice && product.originalPrice > product.price ? 
+                    Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+                
+                return `
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="${product.images[0] || 'logo.png'}" alt="${product.name}" onerror="this.src='logo.png';">
+                            ${discount > 0 ? `<div class="discount-badge">${discount}% OFF</div>` : ''}
+                            <div class="product-overlay">
+                                <button class="quick-view-btn" onclick="quickView('${product._id}')">Quick View</button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>${product.name}</h3>
+                            <div class="rating">
+                                <span class="stars">${'★'.repeat(Math.floor(product.rating || 4))}${'☆'.repeat(5-Math.floor(product.rating || 4))}</span>
+                                <span class="review-count">(${product.reviewCount || 0})</span>
+                            </div>
+                            <div class="price">
+                                <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
+                                ${product.originalPrice && product.originalPrice > product.price ? 
+                                    `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
+                                }
+                                ${discount > 0 ? `<span class="discount-tag">${discount}% off</span>` : ''}
+                            </div>
+                            <div class="product-actions">
+                                <a href="product.html?id=${product._id}" class="btn view-btn">View Details</a>
+                                <button class="btn cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Show/hide load more button
+            const loadMoreBtn = document.getElementById('load-more');
+            if (filteredProducts.length >= currentPage * productsPerPage) {
+                loadMoreBtn.style.display = 'block';
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
         }
 
-        document.getElementById('sort').addEventListener('change', loadCategoryProducts);
-        document.getElementById('search').addEventListener('keyup', loadCategoryProducts);
+        function updateResultsCount(count) {
+            const resultsElement = document.getElementById('results-count');
+            resultsElement.textContent = `${count} products found`;
+        }
+
+        function loadMoreProducts() {
+            currentPage++;
+            const startIndex = 0;
+            const endIndex = currentPage * productsPerPage;
+            const productsToShow = allProducts.slice(0, endIndex);
+            displayProducts(productsToShow);
+        }
+
+        function quickView(productId) {
+            window.location.href = `product.html?id=${productId}`;
+        }
+
+        document.getElementById('sort').addEventListener('change', function() {
+            currentPage = 1;
+            displayProducts(allProducts.slice(0, productsPerPage));
+        });
+
+        document.getElementById('search').addEventListener('keyup', function() {
+            currentPage = 1;
+            displayProducts(allProducts.slice(0, productsPerPage));
+        });
+
+        document.getElementById('load-more').addEventListener('click', loadMoreProducts);
 
         async function searchProducts() {
             const searchTerm = document.getElementById('search').value.toLowerCase();
@@ -108,19 +269,33 @@
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const row = urlParams.get('row');
-                const response = await fetch(`/api/products/search?query=${searchTerm}&row=${row}`);
+                const response = await fetch(`/api/products/search?query=${searchTerm}${row ? `&row=${row}` : ''}`);
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('category-title').textContent = `Search Results for "${searchTerm}"`;
-                    displayProducts(data.products);
+                    allProducts = data.products;
+                    displayProducts(allProducts.slice(0, productsPerPage));
+                    updateResultsCount(allProducts.length);
                 } else {
                     document.getElementById('products').innerHTML = '<p>No products found</p>';
+                    updateResultsCount(0);
                 }
             } catch (error) {
                 console.error('Error searching products:', error);
                 document.getElementById('products').innerHTML = '<p>Error searching products. Please try again.</p>';
+                updateResultsCount(0);
             }
         }
+
+        // Mobile search functionality
+        document.getElementById('mobile-search').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                const searchTerm = this.value.toLowerCase();
+                if (searchTerm.length >= 3) {
+                    searchProducts();
+                }
+            }
+        });
 
         loadCategoryProducts();
     </script>
