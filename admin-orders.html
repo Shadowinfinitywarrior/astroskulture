@@ -50,42 +50,80 @@
                     <h3>Delivered</h3>
                     <span id="delivered-orders">0</span>
                 </div>
+                <div class="stat-card">
+                    <h3>Revenue</h3>
+                    <span id="total-revenue">₹0</span>
+                </div>
             </div>
         </div>
 
         <!-- Filters -->
         <div class="order-filters">
-            <select id="status-filter">
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
-            <select id="date-filter">
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-            </select>
-            <input type="date" id="from-date" placeholder="From Date">
-            <input type="date" id="to-date" placeholder="To Date">
-            <button class="btn" onclick="applyFilters()">Apply Filters</button>
-            <button class="btn secondary" onclick="resetFilters()">Reset</button>
+            <div class="filter-group">
+                <select id="status-filter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="date-filter">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="quarter">This Quarter</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="date" id="from-date" placeholder="From Date">
+            </div>
+            <div class="filter-group">
+                <input type="date" id="to-date" placeholder="To Date">
+            </div>
+            <div class="filter-group">
+                <select id="payment-filter">
+                    <option value="all">All Payments</option>
+                    <option value="paid">Paid</option>
+                    <option value="pending">Payment Pending</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn primary-btn" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn secondary-btn" onclick="resetFilters()">Reset</button>
+                <button class="btn secondary-btn" onclick="exportOrders()">Export</button>
+            </div>
         </div>
 
         <!-- Orders Table -->
         <div class="orders-table-container">
+            <div class="table-header">
+                <div class="table-info">
+                    <span id="orders-count">0 orders</span>
+                    <span id="revenue-info">Total revenue: ₹0</span>
+                </div>
+                <div class="table-actions">
+                    <button class="btn secondary-btn" onclick="refreshOrders()">Refresh</button>
+                    <button class="btn secondary-btn" onclick="bulkUpdateStatus()">Bulk Update</button>
+                </div>
+            </div>
+            
             <table class="orders-table">
                 <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                        </th>
                         <th>Order No.</th>
                         <th>Customer</th>
                         <th>Date</th>
                         <th>Items</th>
-                        <th>Total</th>
+                        <th>Amount</th>
                         <th>Status</th>
+                        <th>Payment</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -97,43 +135,108 @@
 
         <!-- Order Details Modal -->
         <div id="order-modal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content large-modal">
                 <span class="close">&times;</span>
                 <h3>Order Details - <span id="modal-order-number"></span></h3>
-                <div class="order-details">
-                    <div class="order-info">
-                        <h4>Order Information</h4>
-                        <p><strong>Order Date:</strong> <span id="modal-order-date"></span></p>
-                        <p><strong>Customer:</strong> <span id="modal-customer"></span></p>
-                        <p><strong>Status:</strong> <span id="modal-status"></span></p>
-                        <p><strong>Payment Method:</strong> <span id="modal-payment"></span></p>
+                
+                <div class="order-details-grid">
+                    <!-- Order Information -->
+                    <div class="order-section">
+                        <h4>📦 Order Information</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>Order Date:</strong>
+                                <span id="modal-order-date"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Order Status:</strong>
+                                <span id="modal-status" class="status-badge"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Customer Email:</strong>
+                                <span id="modal-customer"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Payment Method:</strong>
+                                <span id="modal-payment"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Payment Status:</strong>
+                                <span id="modal-payment-status" class="status-badge"></span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="shipping-info">
-                        <h4>Shipping Address</h4>
-                        <div id="modal-address"></div>
+
+                    <!-- Shipping Information -->
+                    <div class="order-section">
+                        <h4>🚚 Shipping Information</h4>
+                        <div class="address-card" id="modal-address">
+                            <!-- Address will be populated here -->
+                        </div>
                     </div>
-                    <div class="order-items">
-                        <h4>Order Items</h4>
-                        <div id="modal-items"></div>
+
+                    <!-- Order Items -->
+                    <div class="order-section full-width">
+                        <h4>🛍️ Order Items</h4>
+                        <div class="order-items-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Size</th>
+                                        <th>Price</th>
+                                        <th>Qty</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-items-table">
+                                    <!-- Items will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="order-totals">
-                        <h4>Order Summary</h4>
-                        <p><strong>Subtotal:</strong> ₹<span id="modal-subtotal">0.00</span></p>
-                        <p><strong>Discount:</strong> ₹<span id="modal-discount">0.00</span></p>
-                        <p><strong>GST (18%):</strong> ₹<span id="modal-gst">0.00</span></p>
-                        <p><strong>Total:</strong> ₹<span id="modal-total">0.00</span></p>
+
+                    <!-- Order Summary -->
+                    <div class="order-section">
+                        <h4>💰 Order Summary</h4>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span>Subtotal:</span>
+                                <span>₹<span id="modal-subtotal">0.00</span></span>
+                            </div>
+                            <div class="summary-item discount">
+                                <span>Discount:</span>
+                                <span>-₹<span id="modal-discount">0.00</span></span>
+                            </div>
+                            <div class="summary-item">
+                                <span>GST (18%):</span>
+                                <span>₹<span id="modal-gst">0.00</span></span>
+                            </div>
+                            <div class="summary-item total">
+                                <span><strong>Total Amount:</strong></span>
+                                <span><strong>₹<span id="modal-total">0.00</span></strong></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
                 <div class="modal-actions">
-                    <select id="modal-status-select">
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                    <button class="btn" onclick="updateOrderStatus()">Update Status</button>
-                    <button class="btn secondary" onclick="printOrder()">Print Invoice</button>
+                    <div class="status-update">
+                        <label for="modal-status-select"><strong>Update Order Status:</strong></label>
+                        <select id="modal-status-select">
+                            <option value="pending">⏳ Pending</option>
+                            <option value="confirmed">✅ Confirmed</option>
+                            <option value="shipped">🚚 Shipped</option>
+                            <option value="delivered">📦 Delivered</option>
+                            <option value="cancelled">❌ Cancelled</option>
+                        </select>
+                        <button class="btn primary-btn" onclick="updateOrderStatus()">Update Status</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn secondary-btn" onclick="printInvoice()">🖨️ Print Invoice</button>
+                        <button class="btn secondary-btn" onclick="sendTracking()">📮 Send Tracking</button>
+                        <button class="btn secondary-btn" onclick="resendConfirmation()">📧 Resend Confirmation</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -146,8 +249,21 @@
 
         <!-- No Orders State -->
         <div id="no-orders" class="no-data-state" style="display: none;">
-            <h3>No Orders Found</h3>
-            <p>There are no orders matching your criteria.</p>
+            <div class="no-data-content">
+                <h3>No Orders Found</h3>
+                <p>There are no orders matching your criteria.</p>
+                <div class="no-data-actions">
+                    <button class="btn primary-btn" onclick="resetFilters()">Clear Filters</button>
+                    <button class="btn secondary-btn" onclick="refreshOrders()">Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="btn secondary-btn" id="prev-page">← Previous</button>
+            <span class="page-info" id="page-info">Page 1 of 1</span>
+            <button class="btn secondary-btn" id="next-page">Next →</button>
         </div>
     </section>
 
@@ -184,6 +300,9 @@
     <script>
         let allOrders = [];
         let currentOrderId = '';
+        let currentPage = 1;
+        const ordersPerPage = 20;
+        let selectedOrders = new Set();
 
         async function checkAdmin() {
             const token = localStorage.getItem('token');
@@ -218,6 +337,7 @@
                     allOrders = data.orders;
                     displayOrders(allOrders);
                     updateStats(allOrders);
+                    setupPagination(allOrders.length);
                     hideLoading();
                 } else {
                     showNoOrders();
@@ -232,37 +352,73 @@
 
         function displayOrders(orders) {
             const tbody = document.getElementById('orders-table-body');
+            selectedOrders.clear();
+            document.getElementById('select-all').checked = false;
             
             if (orders.length === 0) {
                 showNoOrders();
                 return;
             }
 
-            tbody.innerHTML = orders.map(order => {
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * ordersPerPage;
+            const endIndex = startIndex + ordersPerPage;
+            const paginatedOrders = orders.slice(startIndex, endIndex);
+
+            tbody.innerHTML = paginatedOrders.map(order => {
                 const orderDate = new Date(order.createdAt).toLocaleDateString('en-IN');
                 const totalItems = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
                 const statusClass = `status-${order.status || 'pending'}`;
+                const paymentStatus = order.paymentStatus || 'pending';
+                const paymentClass = `status-${paymentStatus}`;
                 
                 return `
                     <tr class="order-row" data-order-id="${order._id}">
-                        <td class="order-number">${order.orderNumber || 'N/A'}</td>
-                        <td class="customer">${order.userEmail || 'N/A'}</td>
+                        <td>
+                            <input type="checkbox" class="order-select" value="${order._id}" onchange="toggleOrderSelection('${order._id}')">
+                        </td>
+                        <td class="order-number">
+                            <strong>${order.orderNumber || 'N/A'}</strong>
+                        </td>
+                        <td class="customer">
+                            <div class="customer-info">
+                                <div class="customer-email">${order.userEmail || 'N/A'}</div>
+                                ${order.shippingAddress ? 
+                                    `<div class="customer-location">${order.shippingAddress.city || ''}, ${order.shippingAddress.state || ''}</div>` : 
+                                    ''
+                                }
+                            </div>
+                        </td>
                         <td class="order-date">${orderDate}</td>
-                        <td class="items-count">${totalItems} items</td>
-                        <td class="order-total">₹${(order.finalTotal || 0).toFixed(2)}</td>
+                        <td class="items-count">
+                            <span class="items-badge">${totalItems} items</span>
+                        </td>
+                        <td class="order-total">
+                            <strong>₹${(order.finalTotal || 0).toFixed(2)}</strong>
+                        </td>
                         <td class="order-status">
                             <span class="status-badge ${statusClass}">${order.status || 'pending'}</span>
                         </td>
+                        <td class="payment-status">
+                            <span class="status-badge ${paymentClass}">${paymentStatus}</span>
+                        </td>
                         <td class="order-actions">
-                            <button class="btn view-btn" onclick="viewOrderDetails('${order._id}')">View</button>
-                            <button class="btn edit-btn" onclick="editOrderStatus('${order._id}')">Edit</button>
+                            <button class="btn view-btn" onclick="viewOrderDetails('${order._id}')" title="View Details">
+                                👁️
+                            </button>
+                            <button class="btn edit-btn" onclick="editOrderStatus('${order._id}')" title="Edit Status">
+                                ✏️
+                            </button>
+                            <button class="btn track-btn" onclick="trackOrder('${order._id}')" title="Track Order">
+                                📮
+                            </button>
                         </td>
                     </tr>
                 `;
             }).join('');
 
-            // Hide no orders message if we have orders
             document.getElementById('no-orders').style.display = 'none';
+            document.getElementById('pagination').style.display = 'flex';
         }
 
         function updateStats(orders) {
@@ -270,11 +426,45 @@
             const pending = orders.filter(o => o.status === 'pending').length;
             const shipped = orders.filter(o => o.status === 'shipped').length;
             const delivered = orders.filter(o => o.status === 'delivered').length;
+            const revenue = orders.filter(o => o.status !== 'cancelled')
+                                .reduce((sum, order) => sum + (order.finalTotal || 0), 0);
 
             document.getElementById('total-orders').textContent = total;
             document.getElementById('pending-orders').textContent = pending;
             document.getElementById('shipped-orders').textContent = shipped;
             document.getElementById('delivered-orders').textContent = delivered;
+            document.getElementById('total-revenue').textContent = `₹${revenue.toFixed(2)}`;
+
+            // Update table info
+            document.getElementById('orders-count').textContent = `${total} orders`;
+            document.getElementById('revenue-info').textContent = `Total revenue: ₹${revenue.toFixed(2)}`;
+        }
+
+        function setupPagination(totalOrders) {
+            const totalPages = Math.ceil(totalOrders / ordersPerPage);
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayOrders(allOrders);
+                    setupPagination(allOrders.length);
+                }
+            };
+
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayOrders(allOrders);
+                    setupPagination(allOrders.length);
+                }
+            };
         }
 
         function applyFilters() {
@@ -282,6 +472,7 @@
             const dateFilter = document.getElementById('date-filter').value;
             const fromDate = document.getElementById('from-date').value;
             const toDate = document.getElementById('to-date').value;
+            const paymentFilter = document.getElementById('payment-filter').value;
             const searchTerm = document.getElementById('order-search').value.toLowerCase();
 
             let filteredOrders = [...allOrders];
@@ -306,6 +497,9 @@
                     case 'month':
                         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
                         break;
+                    case 'quarter':
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                        break;
                 }
 
                 filteredOrders = filteredOrders.filter(order => 
@@ -321,9 +515,16 @@
             }
             if (toDate) {
                 const to = new Date(toDate);
-                to.setDate(to.getDate() + 1); // Include the end date
+                to.setDate(to.getDate() + 1);
                 filteredOrders = filteredOrders.filter(order => 
                     new Date(order.createdAt) < to
+                );
+            }
+
+            // Payment filter
+            if (paymentFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(order => 
+                    (order.paymentStatus || 'pending') === paymentFilter
                 );
             }
 
@@ -332,11 +533,15 @@
                 filteredOrders = filteredOrders.filter(order => 
                     order.orderNumber?.toLowerCase().includes(searchTerm) ||
                     order.userEmail?.toLowerCase().includes(searchTerm) ||
-                    order._id?.toLowerCase().includes(searchTerm)
+                    order._id?.toLowerCase().includes(searchTerm) ||
+                    (order.shippingAddress?.city && order.shippingAddress.city.toLowerCase().includes(searchTerm))
                 );
             }
 
+            currentPage = 1;
             displayOrders(filteredOrders);
+            updateStats(filteredOrders);
+            setupPagination(filteredOrders.length);
         }
 
         function resetFilters() {
@@ -344,8 +549,14 @@
             document.getElementById('date-filter').value = 'all';
             document.getElementById('from-date').value = '';
             document.getElementById('to-date').value = '';
+            document.getElementById('payment-filter').value = 'all';
             document.getElementById('order-search').value = '';
+            document.getElementById('mobile-order-search').value = '';
+            
+            currentPage = 1;
             displayOrders(allOrders);
+            updateStats(allOrders);
+            setupPagination(allOrders.length);
         }
 
         function viewOrderDetails(orderId) {
@@ -358,27 +569,57 @@
             document.getElementById('modal-order-number').textContent = order.orderNumber || 'N/A';
             document.getElementById('modal-order-date').textContent = new Date(order.createdAt).toLocaleString('en-IN');
             document.getElementById('modal-customer').textContent = order.userEmail || 'N/A';
-            document.getElementById('modal-status').textContent = order.status || 'pending';
+            
+            // Status with badge
+            const statusElement = document.getElementById('modal-status');
+            statusElement.textContent = order.status || 'pending';
+            statusElement.className = `status-badge status-${order.status || 'pending'}`;
+            
             document.getElementById('modal-payment').textContent = order.paymentMethod || 'N/A';
             
+            // Payment status
+            const paymentStatusElement = document.getElementById('modal-payment-status');
+            const paymentStatus = order.paymentStatus || 'pending';
+            paymentStatusElement.textContent = paymentStatus;
+            paymentStatusElement.className = `status-badge status-${paymentStatus}`;
+            
             // Address
-            const address = order.shippingAddress ? 
-                `${order.shippingAddress.street || ''}, ${order.shippingAddress.city || ''}, ${order.shippingAddress.state || ''}, ${order.shippingAddress.pincode || ''}` :
-                'No address provided';
-            document.getElementById('modal-address').textContent = address;
-
-            // Items
-            const itemsHtml = order.items ? order.items.map(item => `
-                <div class="order-item">
-                    <img src="${item.image || 'logo.png'}" alt="${item.name}" onerror="this.src='logo.png'">
-                    <div class="item-details">
-                        <h5>${item.name}</h5>
-                        <p>Size: ${item.size || 'M'} | Qty: ${item.quantity}</p>
-                        <p>₹${item.price.toFixed(2)} x ${item.quantity} = ₹${item.itemTotal.toFixed(2)}</p>
+            const addressElement = document.getElementById('modal-address');
+            if (order.shippingAddress) {
+                const address = order.shippingAddress;
+                addressElement.innerHTML = `
+                    <div class="address-details">
+                        <p><strong>${address.name || 'Customer'}</strong></p>
+                        <p>${address.street || ''}</p>
+                        <p>${address.city || ''}, ${address.state || ''} - ${address.pincode || ''}</p>
+                        <p>📞 ${address.phone || 'No phone provided'}</p>
                     </div>
-                </div>
-            `).join('') : '<p>No items</p>';
-            document.getElementById('modal-items').innerHTML = itemsHtml;
+                `;
+            } else {
+                addressElement.innerHTML = '<p>No shipping address provided</p>';
+            }
+
+            // Items table
+            const itemsTable = document.getElementById('modal-items-table');
+            if (order.items && order.items.length > 0) {
+                itemsTable.innerHTML = order.items.map(item => `
+                    <tr>
+                        <td class="product-info">
+                            <img src="${item.image || 'logo.png'}" alt="${item.name}" onerror="this.src='logo.png'">
+                            <div>
+                                <strong>${item.name}</strong>
+                                <div class="product-meta">${item.color || ''} • ${item.fabric || ''}</div>
+                            </div>
+                        </td>
+                        <td>${item.size || 'M'}</td>
+                        <td>₹${item.price?.toFixed(2) || '0.00'}</td>
+                        <td>${item.quantity || 1}</td>
+                        <td><strong>₹${item.itemTotal?.toFixed(2) || '0.00'}</strong></td>
+                    </tr>
+                `).join('');
+            } else {
+                itemsTable.innerHTML = '<tr><td colspan="5">No items in this order</td></tr>';
+            }
 
             // Totals
             document.getElementById('modal-subtotal').textContent = (order.orderTotal || 0).toFixed(2);
@@ -408,7 +649,7 @@
                 if (data.success) {
                     alert('Order status updated successfully');
                     closeModal();
-                    loadOrders(); // Reload orders to reflect changes
+                    loadOrders();
                 } else {
                     alert(data.message || 'Failed to update status');
                 }
@@ -454,9 +695,91 @@
             }
         }
 
-        function printOrder() {
-            // Simple print functionality - in a real app, you'd generate a proper invoice
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.order-select');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedOrders.add(checkbox.value);
+                } else {
+                    selectedOrders.delete(checkbox.value);
+                }
+            });
+        }
+
+        function toggleOrderSelection(orderId) {
+            const checkbox = document.querySelector(`.order-select[value="${orderId}"]`);
+            if (checkbox.checked) {
+                selectedOrders.add(orderId);
+            } else {
+                selectedOrders.delete(orderId);
+                document.getElementById('select-all').checked = false;
+            }
+        }
+
+        function bulkUpdateStatus() {
+            if (selectedOrders.size === 0) {
+                alert('Please select at least one order to update.');
+                return;
+            }
+
+            const newStatus = prompt('Enter new status for selected orders (pending/confirmed/shipped/delivered/cancelled):');
+            if (newStatus && ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].includes(newStatus.toLowerCase())) {
+                if (confirm(`Update ${selectedOrders.size} order(s) to "${newStatus}"?`)) {
+                    updateBulkOrderStatus(Array.from(selectedOrders), newStatus.toLowerCase());
+                }
+            } else if (newStatus) {
+                alert('Invalid status. Please use: pending, confirmed, shipped, delivered, or cancelled.');
+            }
+        }
+
+        async function updateBulkOrderStatus(orderIds, status) {
+            try {
+                const response = await fetch('/api/admin/orders/bulk-update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ orderIds, status })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(`Successfully updated ${orderIds.length} order(s)`);
+                    loadOrders();
+                } else {
+                    alert(data.message || 'Failed to update orders');
+                }
+            } catch (error) {
+                console.error('Error updating orders:', error);
+                alert('Error updating orders');
+            }
+        }
+
+        function trackOrder(orderId) {
+            alert(`Tracking functionality for order ${orderId} would be implemented here.`);
+        }
+
+        function printInvoice() {
             window.print();
+        }
+
+        function sendTracking() {
+            alert('Tracking information would be sent to the customer.');
+        }
+
+        function resendConfirmation() {
+            alert('Order confirmation would be resent to the customer.');
+        }
+
+        function exportOrders() {
+            alert('Export functionality would generate a CSV/Excel file of orders.');
+        }
+
+        function refreshOrders() {
+            loadOrders();
         }
 
         function closeModal() {
@@ -466,6 +789,7 @@
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('no-orders').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
         }
 
         function hideLoading() {
@@ -475,6 +799,7 @@
         function showNoOrders() {
             document.getElementById('no-orders').style.display = 'block';
             document.getElementById('orders-table-body').innerHTML = '';
+            document.getElementById('pagination').style.display = 'none';
         }
 
         function showError(message) {
@@ -486,6 +811,7 @@
         document.getElementById('date-filter').addEventListener('change', applyFilters);
         document.getElementById('from-date').addEventListener('change', applyFilters);
         document.getElementById('to-date').addEventListener('change', applyFilters);
+        document.getElementById('payment-filter').addEventListener('change', applyFilters);
         document.getElementById('order-search').addEventListener('input', applyFilters);
         document.getElementById('mobile-order-search').addEventListener('input', applyFilters);
 
