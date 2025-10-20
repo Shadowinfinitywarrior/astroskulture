@@ -6,7 +6,7 @@ const router = express.Router();
 // GET /api/products - Get all products with filtering, sorting, and search
 router.get('/', async (req, res) => {
   try {
-    const { category, search, sort, featured } = req.query;
+    const { category, search, sort, featured, limit, minDiscount } = req.query;
     const db = await connectDB();
     const productsCollection = db.collection('products');
     
@@ -20,13 +20,29 @@ router.get('/', async (req, res) => {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
-        { 'details': { $regex: search, $options: 'i' } }
+        { 'details': { $regex: search, $options: 'i' } },
+        { 'brand': { $regex: search, $options: 'i' } }
       ];
     }
     
     // Featured products filter
     if (featured === 'true') {
       query.featured = true;
+    }
+    
+    // Minimum discount filter
+    if (minDiscount) {
+      query.$expr = {
+        $gte: [
+          {
+            $multiply: [
+              { $divide: [{ $subtract: ['$originalPrice', '$price'] }, '$originalPrice'] },
+              100
+            ]
+          },
+          parseInt(minDiscount)
+        ]
+      };
     }
     
     // Sort options
@@ -51,34 +67,59 @@ router.get('/', async (req, res) => {
         case 'oldest':
           sortOption = { createdAt: 1 };
           break;
+        case 'discount':
+          sortOption = { discountPercentage: -1 };
+          break;
+        case 'rating':
+          sortOption = { rating: -1 };
+          break;
         default:
           sortOption = { createdAt: -1 };
       }
     }
     
-    const products = await productsCollection.find(query).sort(sortOption).toArray();
+    let productsQuery = productsCollection.find(query).sort(sortOption);
     
-    // Format products for response
-    const formattedProducts = products.map(product => ({
-      _id: product._id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      stock: product.stock || 0,
-      images: product.images || [],
-      description: product.description,
-      detailedDescription: product.detailedDescription,
-      details: product.details || [],
-      careInstructions: product.careInstructions || [],
-      color: product.color,
-      fabric: product.fabric,
-      printType: product.printType,
-      deliveryTime: product.deliveryTime,
-      featured: product.featured || false,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt
-    }));
+    // Apply limit if specified
+    if (limit && !isNaN(parseInt(limit))) {
+      productsQuery = productsQuery.limit(parseInt(limit));
+    }
+    
+    const products = await productsQuery.toArray();
+    
+    // Format products for response with enhanced data
+    const formattedProducts = products.map(product => {
+      const discountPercentage = product.originalPrice && product.originalPrice > product.price ? 
+        Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      
+      return {
+        _id: product._id,
+        name: product.name,
+        brand: product.brand || 'Astros Kulture',
+        category: product.category,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        discountPercentage: discountPercentage,
+        stock: product.stock || 0,
+        images: product.images || [],
+        description: product.description,
+        detailedDescription: product.detailedDescription,
+        details: product.details || [],
+        careInstructions: product.careInstructions || [],
+        color: product.color,
+        fabric: product.fabric,
+        printType: product.printType,
+        deliveryTime: product.deliveryTime,
+        featured: product.featured || false,
+        rating: product.rating || 4.0,
+        reviewCount: product.reviewCount || 0,
+        sizes: product.sizes || ['M', 'L', 'XL', 'XXL'],
+        fit: product.fit || 'Regular',
+        material: product.material || 'Cotton',
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt
+      };
+    });
     
     res.json({ 
       success: true, 
@@ -107,13 +148,18 @@ router.get('/:id', async (req, res) => {
       });
     }
     
-    // Format product response
+    const discountPercentage = product.originalPrice && product.originalPrice > product.price ? 
+      Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+    
+    // Format product response with enhanced data
     const formattedProduct = {
       _id: product._id,
       name: product.name,
+      brand: product.brand || 'Astros Kulture',
       category: product.category,
       price: product.price,
       originalPrice: product.originalPrice,
+      discountPercentage: discountPercentage,
       stock: product.stock || 0,
       images: product.images || [],
       description: product.description,
@@ -125,6 +171,12 @@ router.get('/:id', async (req, res) => {
       printType: product.printType,
       deliveryTime: product.deliveryTime,
       featured: product.featured || false,
+      rating: product.rating || 4.0,
+      reviewCount: product.reviewCount || 0,
+      sizes: product.sizes || ['M', 'L', 'XL', 'XXL'],
+      fit: product.fit || 'Regular',
+      material: product.material || 'Cotton',
+      tags: product.tags || [],
       createdAt: product.createdAt,
       updatedAt: product.updatedAt
     };
@@ -180,27 +232,39 @@ router.post('/', async (req, res) => {
       .find({ _id: { $in: objectIds } })
       .toArray();
     
-    // Format products for response
-    const formattedProducts = products.map(product => ({
-      _id: product._id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      stock: product.stock || 0,
-      images: product.images || [],
-      description: product.description,
-      detailedDescription: product.detailedDescription,
-      details: product.details || [],
-      careInstructions: product.careInstructions || [],
-      color: product.color,
-      fabric: product.fabric,
-      printType: product.printType,
-      deliveryTime: product.deliveryTime,
-      featured: product.featured || false,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt
-    }));
+    // Format products for response with enhanced data
+    const formattedProducts = products.map(product => {
+      const discountPercentage = product.originalPrice && product.originalPrice > product.price ? 
+        Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      
+      return {
+        _id: product._id,
+        name: product.name,
+        brand: product.brand || 'Astros Kulture',
+        category: product.category,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        discountPercentage: discountPercentage,
+        stock: product.stock || 0,
+        images: product.images || [],
+        description: product.description,
+        detailedDescription: product.detailedDescription,
+        details: product.details || [],
+        careInstructions: product.careInstructions || [],
+        color: product.color,
+        fabric: product.fabric,
+        printType: product.printType,
+        deliveryTime: product.deliveryTime,
+        featured: product.featured || false,
+        rating: product.rating || 4.0,
+        reviewCount: product.reviewCount || 0,
+        sizes: product.sizes || ['M', 'L', 'XL', 'XXL'],
+        fit: product.fit || 'Regular',
+        material: product.material || 'Cotton',
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt
+      };
+    });
     
     res.json({ 
       success: true, 
@@ -220,31 +284,48 @@ router.post('/', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const { category } = req.params;
-    const { limit } = req.query;
+    const { limit, sort } = req.query;
     
     const db = await connectDB();
     const productsCollection = db.collection('products');
     
     let query = { category: category.toLowerCase() };
-    let options = { sort: { createdAt: -1 } };
+    let sortOption = { createdAt: -1 };
     
-    if (limit && !isNaN(parseInt(limit))) {
-      options.limit = parseInt(limit);
+    if (sort === 'discount') {
+      sortOption = { discountPercentage: -1 };
+    } else if (sort === 'rating') {
+      sortOption = { rating: -1 };
     }
     
-    const products = await productsCollection.find(query, options).toArray();
+    let productsQuery = productsCollection.find(query).sort(sortOption);
     
-    const formattedProducts = products.map(product => ({
-      _id: product._id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      stock: product.stock || 0,
-      images: product.images || [],
-      description: product.description,
-      featured: product.featured || false
-    }));
+    if (limit && !isNaN(parseInt(limit))) {
+      productsQuery = productsQuery.limit(parseInt(limit));
+    }
+    
+    const products = await productsQuery.toArray();
+    
+    const formattedProducts = products.map(product => {
+      const discountPercentage = product.originalPrice && product.originalPrice > product.price ? 
+        Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      
+      return {
+        _id: product._id,
+        name: product.name,
+        brand: product.brand || 'Astros Kulture',
+        category: product.category,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        discountPercentage: discountPercentage,
+        stock: product.stock || 0,
+        images: product.images || [],
+        description: product.description,
+        rating: product.rating || 4.0,
+        reviewCount: product.reviewCount || 0,
+        featured: product.featured || false
+      };
+    });
     
     res.json({ 
       success: true, 
@@ -274,16 +355,25 @@ router.get('/featured/:limit?', async (req, res) => {
       .limit(limit)
       .toArray();
     
-    const formattedProducts = featuredProducts.map(product => ({
-      _id: product._id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      stock: product.stock || 0,
-      images: product.images || [],
-      description: product.description
-    }));
+    const formattedProducts = featuredProducts.map(product => {
+      const discountPercentage = product.originalPrice && product.originalPrice > product.price ? 
+        Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      
+      return {
+        _id: product._id,
+        name: product.name,
+        brand: product.brand || 'Astros Kulture',
+        category: product.category,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        discountPercentage: discountPercentage,
+        stock: product.stock || 0,
+        images: product.images || [],
+        description: product.description,
+        rating: product.rating || 4.0,
+        reviewCount: product.reviewCount || 0
+      };
+    });
     
     res.json({ 
       success: true, 
@@ -296,6 +386,43 @@ router.get('/featured/:limit?', async (req, res) => {
       success: false, 
       message: 'Server error' 
     });
+  }
+});
+
+// GET /api/products/search/suggestions - Get search suggestions
+router.get('/search/suggestions', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json({ success: true, suggestions: [] });
+    }
+    
+    const db = await connectDB();
+    const products = await db.collection('products')
+      .find({
+        $or: [
+          { name: { $regex: q, $options: 'i' } },
+          { brand: { $regex: q, $options: 'i' } },
+          { category: { $regex: q, $options: 'i' } }
+        ]
+      })
+      .limit(5)
+      .toArray();
+    
+    const suggestions = products.map(product => ({
+      _id: product._id,
+      name: product.name,
+      brand: product.brand || 'Astros Kulture',
+      price: product.price,
+      image: product.images && product.images.length > 0 ? product.images[0] : null,
+      category: product.category
+    }));
+    
+    res.json({ success: true, suggestions });
+    
+  } catch (error) {
+    console.error('Error in /api/products/search/suggestions:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
