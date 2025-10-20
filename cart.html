@@ -11,7 +11,13 @@
         <div class="logo">
             <img src="logo.png" alt="Astros Kulture">
         </div>
-        <div class="menu-toggle">☰</div>
+        <div class="mobile-controls">
+            <div class="mobile-search">
+                <input type="text" placeholder="Search" id="mobile-search">
+            </div>
+            <a href="cart.html" class="mobile-cart">Cart</a>
+            <div class="menu-toggle">☰</div>
+        </div>
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li class="dropdown-parent">
@@ -19,6 +25,8 @@
                 <ul class="dropdown">
                     <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
                     <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                    <li><a href="shop.html?category=shirts">Shirts</a></li>
+                    <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
                 </ul>
             </li>
             <li class="dropdown-parent">
@@ -29,40 +37,155 @@
                     <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
                 </ul>
             </li>
-            <li><a href="cart.html">Cart</a></li>
-            <li><input type="text" placeholder="Search" id="search"></li>
+            <li class="desktop-search">
+                <input type="text" placeholder="Search" id="search">
+            </li>
+            <li class="desktop-cart">
+                <a href="cart.html">Cart</a>
+            </li>
         </ul>
     </nav>
 
     <section class="cart">
-        <h2>Your Cart</h2>
-        <div id="cart-items"></div>
+        <div class="cart-header">
+            <h2>3/3 ITEMS SELECTED (₹ 8697)</h2>
+        </div>
+        
+        <div id="cart-items" class="cart-items-container">
+            <!-- Cart items will be loaded here -->
+        </div>
+
+        <!-- You May Also Like Section -->
+        <section class="recommended-section">
+            <h3>YOU MAY ALSO LIKE</h3>
+            <div class="products-grid" id="recommended-products">
+                <!-- Recommended products will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Membership Offer -->
+        <div class="membership-offer">
+            <h3>YOU ARE MISSING OUT ON!</h3>
+            <p>Save an additional ₹360 by adding membership to your cart.</p>
+            <div class="offer-details">
+                <p>Free shipping on all orders</p>
+                <button class="btn view-benefits">View all benefits</button>
+            </div>
+        </div>
+
+        <!-- Coupon and Options -->
+        <div class="cart-options">
+            <button class="btn coupon-btn">Apply Coupon</button>
+            <button class="btn voucher-btn">Gift Voucher</button>
+            <button class="btn gift-wrap-btn">Gift Wrap (₹ 25)</button>
+            <button class="btn points-btn">TSS Money / TSS Points</button>
+        </div>
+
+        <!-- Price Details -->
+        <div class="price-details">
+            <h3>Price Details (3 Items)</h3>
+            <div class="price-row">
+                <span>Cart Total (incl. of all taxes)</span>
+                <span id="cart-subtotal">₹ 6010.97</span>
+            </div>
+            <div class="price-row">
+                <span>GST</span>
+                <span id="cart-gst">₹ 608.03</span>
+            </div>
+            <div class="price-row">
+                <span>Shipping Charges</span>
+                <span class="free-shipping">Free</span>
+            </div>
+            <div class="price-row total-row">
+                <span>Total Amount</span>
+                <span id="cart-total">₹ 6697.00</span>
+            </div>
+        </div>
+
+        <!-- Brand Info -->
+        <div class="brand-info">
+            <h3>HOMEGROWN INDIAN BRAND</h3>
+            <p>Over 6 Million Happy Customers</p>
+            <button class="btn know-more-btn">Know more about The Souled Store</button>
+        </div>
+
         <div class="cart-summary" id="cart-summary">
-            <p>Total: $<span id="cart-total">0.00</span></p>
-            <button id="checkout-btn">Checkout</button>
+            <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
-        <div class="footer-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-            <a href="#">Return Policy</a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                <p><strong>WHATSAPP:</strong> 7871658830</p>
+                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="cart.html">Cart</a>
+                <a href="account.html">Account</a>
+            </div>
+            <div class="footer-section">
+                <h3>Policies</h3>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Return Policy</a>
+                <a href="#">Shipping Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
     <script>
         updateAccountMenu();
+        
+        // Sample cart items data structure
+        const sampleCartItems = [
+            {
+                id: '1',
+                name: 'Attack On Titan: Survey Corps Super Overrated T-Shirts',
+                size: 'M',
+                quantity: 1,
+                price: 1299,
+                image: 'logo.png'
+            },
+            {
+                id: '2', 
+                name: 'Oversized Jacket: Hunter Bomber Jackets',
+                size: 'L',
+                quantity: 1,
+                price: 3699,
+                image: 'logo.png'
+            },
+            {
+                id: '3',
+                name: 'TSS Originals: Urban Drift New Oversized Joggers',
+                size: 'L', 
+                quantity: 1,
+                price: 1899,
+                image: 'logo.png'
+            }
+        ];
+
         async function loadCart() {
             const cart = JSON.parse(localStorage.getItem('cart') || '{}');
             const container = document.getElementById('cart-items');
+            
             if (Object.keys(cart).length === 0) {
-                container.innerHTML = '<p>Your cart is empty</p>';
+                // Show sample data or empty cart message
+                displaySampleCart();
                 document.getElementById('cart-summary').classList.add('hidden');
                 return;
             }
+            
             try {
                 const response = await fetch('/api/products', {
                     method: 'POST',
@@ -71,27 +194,80 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    let total = 0;
+                    let subtotal = 0;
                     container.innerHTML = data.products.map(product => {
                         const quantity = cart[product._id];
                         const itemTotal = product.price * quantity;
-                        total += itemTotal;
+                        subtotal += itemTotal;
                         return `
                             <div class="cart-item">
-                                <img src="${product.images[0] || 'logo.png'}" alt="${product.name}">
-                                <h3>${product.name}</h3>
-                                <p>$${product.price.toFixed(2)} x ${quantity} = $${itemTotal.toFixed(2)}</p>
-                                <button class="btn" onclick="removeFromCart('${product._id}')">Remove</button>
+                                <div class="item-image">
+                                    <img src="${product.images[0] || 'logo.png'}" alt="${product.name}">
+                                </div>
+                                <div class="item-details">
+                                    <h3>${product.name}</h3>
+                                    <p class="item-size">Size: ${product.selectedSize || 'M'}</p>
+                                    <p class="item-quantity">Qty: ${quantity}</p>
+                                    <p class="item-price">₹ ${itemTotal.toFixed(2)} MBP incl. of all taxes</p>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="remove-btn" onclick="removeFromCart('${product._id}')">REMOVE</button>
+                                    <button class="wishlist-btn" onclick="moveToWishlist('${product._id}')">MOVE TO WISHLIST</button>
+                                </div>
                             </div>
                         `;
                     }).join('');
-                    document.getElementById('cart-total').textContent = total.toFixed(2);
+                    
+                    updatePriceDetails(subtotal);
                     document.getElementById('cart-summary').classList.remove('hidden');
+                    loadRecommendedProducts();
                 }
             } catch (error) {
                 console.error('Error loading cart:', error);
-                container.innerHTML = '<p>Error loading cart. Please try again.</p>';
+                displaySampleCart();
             }
+        }
+
+        function displaySampleCart() {
+            const container = document.getElementById('cart-items');
+            let subtotal = 0;
+            
+            container.innerHTML = sampleCartItems.map(item => {
+                subtotal += item.price;
+                return `
+                    <div class="cart-item">
+                        <div class="item-image">
+                            <img src="${item.image}" alt="${item.name}">
+                        </div>
+                        <div class="item-details">
+                            <h3>${item.name}</h3>
+                            <p class="item-size">Size: ${item.size}</p>
+                            <p class="item-quantity">Qty: ${item.quantity}</p>
+                            <p class="item-price">₹ ${item.price.toFixed(2)} MBP incl. of all taxes</p>
+                        </div>
+                        <div class="item-actions">
+                            <button class="remove-btn" onclick="removeSampleItem('${item.id}')">REMOVE</button>
+                            <button class="wishlist-btn" onclick="moveToWishlist('${item.id}')">MOVE TO WISHLIST</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updatePriceDetails(subtotal);
+            loadRecommendedProducts();
+        }
+
+        function updatePriceDetails(subtotal) {
+            const gst = subtotal * 0.18; // 18% GST
+            const total = subtotal + gst;
+            
+            document.getElementById('cart-subtotal').textContent = `₹ ${subtotal.toFixed(2)}`;
+            document.getElementById('cart-gst').textContent = `₹ ${gst.toFixed(2)}`;
+            document.getElementById('cart-total').textContent = `₹ ${total.toFixed(2)}`;
+            
+            // Update cart header
+            const itemCount = Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length || sampleCartItems.length;
+            document.querySelector('.cart-header h2').textContent = `${itemCount}/3 ITEMS SELECTED (₹ ${total.toFixed(0)})`;
         }
 
         function removeFromCart(productId) {
@@ -100,6 +276,64 @@
                 delete cart[productId];
                 localStorage.setItem('cart', JSON.stringify(cart));
                 loadCart();
+            }
+        }
+
+        function removeSampleItem(itemId) {
+            const index = sampleCartItems.findIndex(item => item.id === itemId);
+            if (index > -1) {
+                sampleCartItems.splice(index, 1);
+                loadCart();
+            }
+        }
+
+        function moveToWishlist(productId) {
+            // Add to wishlist functionality
+            console.log('Moving to wishlist:', productId);
+            alert('Item moved to wishlist');
+        }
+
+        async function loadRecommendedProducts() {
+            try {
+                const response = await fetch('/api/products?limit=4');
+                const data = await response.json();
+                if (data.success) {
+                    const container = document.getElementById('recommended-products');
+                    container.innerHTML = data.products.map(product => {
+                        const discount = product.originalPrice && product.originalPrice > product.price ? 
+                            Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+                        
+                        return `
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
+                                         alt="${product.name}" 
+                                         onerror="this.src='logo.png'"
+                                         onclick="window.location.href='product.html?id=${product._id}'">
+                                    ${discount > 0 ? `
+                                        <div class="discount-badge">
+                                            ${discount}% OFF
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="product-info">
+                                    <h3>${product.name}</h3>
+                                    <div class="price">
+                                        <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
+                                        ${product.originalPrice && product.originalPrice > product.price ? 
+                                            `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
+                                        }
+                                    </div>
+                                    <button class="btn view-product-btn" onclick="window.location.href='product.html?id=${product._id}'">
+                                        View Product
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Error loading recommended products:', error);
             }
         }
 
@@ -135,6 +369,16 @@
             } catch (error) {
                 console.error('Checkout error:', error);
                 alert('Error during checkout');
+            }
+        });
+
+        // Mobile search functionality
+        document.getElementById('mobile-search').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                const searchTerm = this.value.toLowerCase();
+                if (searchTerm.length >= 3) {
+                    window.location.href = `shop.html?search=${encodeURIComponent(searchTerm)}`;
+                }
             }
         });
 
