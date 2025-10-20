@@ -11,7 +11,13 @@
         <div class="logo">
             <img src="logo.png" alt="Astros Kulture">
         </div>
-        <div class="menu-toggle">☰</div>
+        <div class="mobile-controls">
+            <div class="mobile-search">
+                <input type="text" placeholder="Search" id="mobile-search">
+            </div>
+            <a href="cart.html" class="mobile-cart">Cart</a>
+            <div class="menu-toggle">☰</div>
+        </div>
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li class="dropdown-parent">
@@ -19,6 +25,8 @@
                 <ul class="dropdown">
                     <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
                     <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                    <li><a href="shop.html?category=shirts">Shirts</a></li>
+                    <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
                 </ul>
             </li>
             <li class="dropdown-parent">
@@ -29,8 +37,12 @@
                     <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
                 </ul>
             </li>
-            <li><a href="cart.html">Cart</a></li>
-            <li><input type="text" placeholder="Search" id="search"></li>
+            <li class="desktop-search">
+                <input type="text" placeholder="Search" id="search">
+            </li>
+            <li class="desktop-cart">
+                <a href="cart.html">Cart</a>
+            </li>
         </ul>
     </nav>
 
@@ -44,6 +56,18 @@
         </div>
     </section>
 
+    <!-- Size Selection Section -->
+    <section class="size-selection" id="size-selection" style="display: none;">
+        <h3>Select Size</h3>
+        <div class="size-options">
+            <button class="size-btn" data-size="M">M</button>
+            <button class="size-btn" data-size="L">L</button>
+            <button class="size-btn" data-size="XL">XL</button>
+            <button class="size-btn" data-size="XXL">XXL</button>
+        </div>
+        <button class="btn add-to-bag-btn" onclick="addToCartWithSize()">Add To Bag</button>
+    </section>
+
     <section class="recommended-products">
         <h2>We Think You'll Vibe With These</h2>
         <div class="products-grid" id="recommended-products">
@@ -52,17 +76,39 @@
     </section>
 
     <footer>
-        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
-        <div class="footer-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-            <a href="#">Return Policy</a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                <p><strong>WHATSAPP:</strong> 7871658830</p>
+                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="cart.html">Cart</a>
+                <a href="account.html">Account</a>
+            </div>
+            <div class="footer-section">
+                <h3>Policies</h3>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Return Policy</a>
+                <a href="#">Shipping Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
     <script>
         updateAccountMenu();
+        let selectedSize = '';
+        let currentProductId = '';
         
         async function loadProduct() {
             showLoading();
@@ -72,6 +118,8 @@
                 showError('Product not found.');
                 return;
             }
+            
+            currentProductId = id;
             
             try {
                 const response = await fetch(`/api/products/${id}`);
@@ -141,6 +189,11 @@
                     <div class="details-section">
                         <h1 class="product-title">${product.name}</h1>
                         
+                        <div class="rating-section">
+                            <span class="rating">${product.rating || '4.5'} ★</span>
+                            <span class="review-count">| ${product.reviewCount || '0'} reviews</span>
+                        </div>
+                        
                         <div class="price-section">
                             <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
                             ${discountHtml}
@@ -151,12 +204,22 @@
                             ${isInStock && product.stock <= 10 ? `<span class="low-stock-warning"> (Only ${product.stock} left!)</span>` : ''}
                         </div>
                         
+                        <div class="size-section">
+                            <h4>Select Size:</h4>
+                            <div class="size-options">
+                                <button class="size-btn" data-size="M" onclick="selectSize(this)">M</button>
+                                <button class="size-btn" data-size="L" onclick="selectSize(this)">L</button>
+                                <button class="size-btn" data-size="XL" onclick="selectSize(this)">XL</button>
+                                <button class="size-btn" data-size="XXL" onclick="selectSize(this)">XXL</button>
+                            </div>
+                        </div>
+                        
                         <div class="action-buttons">
-                            <button class="btn buy-now-btn" onclick="buyNow('${product._id}')" ${!isInStock ? 'disabled' : ''}>
-                                ${isInStock ? 'Buy Now' : 'Sold Out'}
+                            <button class="btn add-to-bag-btn" onclick="addToCartWithSize()" ${!isInStock ? 'disabled' : ''}>
+                                ${isInStock ? 'Add to Bag' : 'Sold Out'}
                             </button>
-                            <button class="btn add-to-cart-btn" onclick="addToCart('${product._id}')" ${!isInStock ? 'disabled' : ''}>
-                                ${isInStock ? 'Add to Cart' : 'Out of Stock'}
+                            <button class="btn buy-now-btn" onclick="buyNowWithSize()" ${!isInStock ? 'disabled' : ''}>
+                                ${isInStock ? 'Buy Now' : 'Out of Stock'}
                             </button>
                         </div>
                         
@@ -204,6 +267,34 @@
             `;
             
             addToRecentlyViewed(product._id);
+        }
+
+        function selectSize(button) {
+            // Remove active class from all size buttons
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            selectedSize = button.getAttribute('data-size');
+        }
+
+        function addToCartWithSize() {
+            if (!selectedSize) {
+                alert('Please select a size');
+                return;
+            }
+            addToCart(currentProductId, selectedSize);
+        }
+
+        function buyNowWithSize() {
+            if (!selectedSize) {
+                alert('Please select a size');
+                return;
+            }
+            addToCart(currentProductId, selectedSize);
+            window.location.href = 'cart.html';
         }
 
         function changeMainImage(thumb) {
@@ -256,7 +347,7 @@
 
         function handleImageError(img, fallbackSrc) {
             img.src = fallbackSrc;
-            img.onerror = null; // Prevent infinite loop
+            img.onerror = null;
         }
 
         function showLoading() {
