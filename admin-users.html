@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astros Kulture - Admin Users</title>
+    <title>Admin Users - Astros Kulture</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,36 +11,306 @@
         <div class="logo">
             <img src="logo.png" alt="Astros Kulture">
         </div>
-        <div class="menu-toggle">☰</div>
+        <div class="mobile-controls">
+            <div class="mobile-search">
+                <input type="text" placeholder="Search users..." id="mobile-user-search">
+            </div>
+            <div class="menu-toggle">☰</div>
+        </div>
         <ul class="nav-links">
             <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
             <li><a href="admin-products.html">Products</a></li>
             <li><a href="admin-orders.html">Orders</a></li>
-            <li><a href="admin-users.html">Users</a></li>
+            <li><a href="admin-users.html" class="active">Users</a></li>
             <li><a href="#" onclick="logout()">Logout</a></li>
+            <li class="desktop-search">
+                <input type="text" placeholder="Search users..." id="user-search">
+            </li>
         </ul>
     </nav>
 
     <section class="admin fade-in">
-        <h2>Manage Users</h2>
-        <div id="users" class="products-grid"></div>
+        <div class="admin-header">
+            <h2>Manage Users</h2>
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <span id="total-users">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Admins</h3>
+                    <span id="admin-users">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Customers</h3>
+                    <span id="customer-users">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Today</h3>
+                    <span id="active-today">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="admin-toolbar">
+            <div class="search-filters">
+                <input type="text" id="search-users" placeholder="Search by name, email..." onkeyup="filterUsers()">
+                <select id="role-filter" onchange="filterUsers()">
+                    <option value="all">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">Customer</option>
+                </select>
+                <select id="status-filter" onchange="filterUsers()">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <button class="btn primary-btn" onclick="createUser()">
+                <span>+</span> Add New User
+            </button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-container">
+            <div class="table-header">
+                <div class="table-info">
+                    <span id="users-count">0 users</span>
+                    <span id="filter-info"></span>
+                </div>
+                <div class="table-actions">
+                    <button class="btn secondary-btn" onclick="exportUsers()">Export Users</button>
+                    <button class="btn secondary-btn" onclick="refreshUsers()">Refresh</button>
+                </div>
+            </div>
+            
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Orders</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- Users will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- User Details Modal -->
+        <div id="user-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>User Details - <span id="modal-user-name"></span></h3>
+                
+                <div class="user-details-grid">
+                    <!-- User Information -->
+                    <div class="user-section">
+                        <h4>👤 User Information</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>User ID:</strong>
+                                <span id="modal-user-id"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Full Name:</strong>
+                                <span id="modal-full-name"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Email:</strong>
+                                <span id="modal-user-email"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Phone:</strong>
+                                <span id="modal-user-phone">Not provided</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Joined:</strong>
+                                <span id="modal-join-date"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="user-section">
+                        <h4>⚙️ Account Information</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <strong>Role:</strong>
+                                <span id="modal-user-role" class="role-badge"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Status:</strong>
+                                <span id="modal-user-status" class="status-badge"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Last Login:</strong>
+                                <span id="modal-last-login">Never</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Email Verified:</strong>
+                                <span id="modal-email-verified" class="status-badge"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Statistics -->
+                    <div class="user-section full-width">
+                        <h4>📊 User Statistics</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number" id="modal-total-orders">0</span>
+                                <span class="stat-label">Total Orders</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="modal-total-spent">₹0</span>
+                                <span class="stat-label">Total Spent</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="modal-pending-orders">0</span>
+                                <span class="stat-label">Pending Orders</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="modal-completed-orders">0</span>
+                                <span class="stat-label">Completed Orders</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <div class="role-update">
+                        <label for="modal-role-select"><strong>Update User Role:</strong></label>
+                        <select id="modal-role-select">
+                            <option value="user">👤 Customer</option>
+                            <option value="admin">⚡ Admin</option>
+                        </select>
+                        <button class="btn primary-btn" onclick="updateUserRole()">Update Role</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn secondary-btn" onclick="sendResetPassword()">🔑 Reset Password</button>
+                        <button class="btn secondary-btn" onclick="toggleUserStatus()">🔄 Toggle Status</button>
+                        <button class="btn danger-btn" onclick="deleteUser()">🗑️ Delete User</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create User Modal -->
+        <div id="create-user-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Create New User</h3>
+                
+                <form id="create-user-form" class="user-form">
+                    <div class="form-group">
+                        <label for="new-user-name">Full Name *</label>
+                        <input type="text" id="new-user-name" placeholder="Enter full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-user-email">Email Address *</label>
+                        <input type="email" id="new-user-email" placeholder="Enter email address" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-user-password">Password *</label>
+                        <input type="password" id="new-user-password" placeholder="Enter password" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-user-phone">Phone Number</label>
+                        <input type="tel" id="new-user-phone" placeholder="Enter phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-user-role">User Role *</label>
+                        <select id="new-user-role" required>
+                            <option value="user">Customer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary-btn">Create User</button>
+                        <button type="button" class="btn secondary-btn" onclick="closeCreateUserModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading users...</p>
+        </div>
+
+        <!-- No Users State -->
+        <div id="no-users" class="no-data-state" style="display: none;">
+            <div class="no-data-content">
+                <h3>No Users Found</h3>
+                <p>There are no users matching your criteria.</p>
+                <div class="no-data-actions">
+                    <button class="btn primary-btn" onclick="resetFilters()">Clear Filters</button>
+                    <button class="btn secondary-btn" onclick="createUser()">Create New User</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
         <div id="error-message" class="error-message hidden">
-            <p>Error loading users: The server returned a 404 (Not Found) error. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.</p>
+            <div class="error-content">
+                <h3>⚠️ Error Loading Users</h3>
+                <p id="error-text">The server returned an error while loading users.</p>
+                <div class="error-actions">
+                    <button class="btn primary-btn" onclick="retryLoadUsers()">Retry</button>
+                    <button class="btn secondary-btn" onclick="contactSupport()">Contact Support</button>
+                </div>
+            </div>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
-        <div class="footer-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-            <a href="#">Return Policy</a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                <p><strong>WHATSAPP:</strong> 7871658830</p>
+                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html">Store Front</a>
+                <a href="admin.html">Admin Dashboard</a>
+                <a href="admin-products.html">Manage Products</a>
+                <a href="admin-orders.html">Manage Orders</a>
+            </div>
+            <div class="footer-section">
+                <h3>Policies</h3>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Return Policy</a>
+                <a href="#">Shipping Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
     <script>
+        let allUsers = [];
+        let currentUserId = '';
+
         async function checkAdmin() {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -52,7 +322,6 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                // FIX: Changed from data.user.role to data.data.role
                 if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
                     return false;
@@ -66,53 +335,226 @@
         }
 
         async function loadUsers() {
-            const usersDiv = document.getElementById('users');
-            const errorDiv = document.getElementById('error-message');
-            usersDiv.innerHTML = '<p>Loading users...</p>';
-            errorDiv.classList.add('hidden');
-
+            showLoading();
+            hideError();
+            
             try {
                 const response = await fetch('/api/admin/users', {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
                 const data = await response.json();
                 if (data.success) {
-                    usersDiv.innerHTML = data.users.map(user => `
-                        <div class="product-item">
-                            <p><strong>ID:</strong> ${user._id}</p>
-                            <p><strong>Name:</strong> ${user.name || 'Not provided'}</p>
-                            <p><strong>Email:</strong> ${user.email}</p>
-                            <p><strong>Role:</strong> ${user.role}</p>
-                            <p><strong>Created:</strong> ${new Date(user.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                            <select class="status-select" id="role-${user._id}">
-                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
-                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-                            </select>
-                            <button class="btn" onclick="updateUserRole('${user._id}')">Update Role</button>
-                        </div>
-                    `).join('');
+                    allUsers = data.users;
+                    displayUsers(allUsers);
+                    updateStats(allUsers);
+                    hideLoading();
                 } else {
-                    usersDiv.innerHTML = '<p>No users found or access denied.</p>';
+                    showNoUsers();
+                    hideLoading();
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
-                usersDiv.innerHTML = '';
-                errorDiv.classList.remove('hidden');
-                if (error.message.includes('404')) {
-                    errorDiv.querySelector('p').textContent = `Error loading users: The server returned a 404 (Not Found) error. This may indicate the /api/admin/users endpoint is unavailable. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
+                showError(error);
+                hideLoading();
+            }
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('users-table-body');
+            
+            if (users.length === 0) {
+                showNoUsers();
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => {
+                const joinDate = new Date(user.createdAt || Date.now()).toLocaleDateString('en-IN');
+                const roleClass = `role-${user.role || 'user'}`;
+                const statusClass = `status-${user.status || 'active'}`;
+                const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('en-IN') : 'Never';
+                
+                return `
+                    <tr class="user-row" data-user-id="${user._id}">
+                        <td class="user-info">
+                            <div class="user-avatar">
+                                ${user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div class="user-details">
+                                <strong>${user.name || 'No Name'}</strong>
+                                <div class="user-meta">ID: ${user._id.substring(0, 8)}...</div>
+                            </div>
+                        </td>
+                        <td class="user-email">${user.email}</td>
+                        <td class="user-role">
+                            <span class="role-badge ${roleClass}">${user.role || 'user'}</span>
+                        </td>
+                        <td class="user-status">
+                            <span class="status-badge ${statusClass}">${user.status || 'active'}</span>
+                        </td>
+                        <td class="join-date">${joinDate}</td>
+                        <td class="user-orders">
+                            <span class="orders-count">${user.orderCount || 0}</span>
+                        </td>
+                        <td class="user-actions">
+                            <button class="btn view-btn" onclick="viewUserDetails('${user._id}')" title="View Details">
+                                👁️
+                            </button>
+                            <button class="btn edit-btn" onclick="editUserRole('${user._id}')" title="Edit Role">
+                                ✏️
+                            </button>
+                            <button class="btn danger-btn" onclick="deleteUserPrompt('${user._id}')" title="Delete User">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('no-users').style.display = 'none';
+        }
+
+        function updateStats(users) {
+            const totalUsers = users.length;
+            const adminUsers = users.filter(u => u.role === 'admin').length;
+            const customerUsers = users.filter(u => u.role === 'user').length;
+            const activeToday = users.filter(u => {
+                const lastLogin = u.lastLogin ? new Date(u.lastLogin) : null;
+                const today = new Date();
+                return lastLogin && lastLogin.toDateString() === today.toDateString();
+            }).length;
+
+            document.getElementById('total-users').textContent = totalUsers;
+            document.getElementById('admin-users').textContent = adminUsers;
+            document.getElementById('customer-users').textContent = customerUsers;
+            document.getElementById('active-today').textContent = activeToday;
+
+            // Update table info
+            document.getElementById('users-count').textContent = `${totalUsers} users`;
+            document.getElementById('filter-info').textContent = `• ${adminUsers} admins • ${customerUsers} customers`;
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('search-users').value.toLowerCase();
+            const roleFilter = document.getElementById('role-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+            
+            let filteredUsers = allUsers.filter(user => {
+                const matchesSearch = 
+                    (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                    user.email.toLowerCase().includes(searchTerm) ||
+                    user._id.toLowerCase().includes(searchTerm);
+                const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+                const matchesStatus = statusFilter === 'all' || (user.status || 'active') === statusFilter;
+                
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+            
+            displayUsers(filteredUsers);
+            updateStats(filteredUsers);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-users').value = '';
+            document.getElementById('role-filter').value = 'all';
+            document.getElementById('status-filter').value = 'all';
+            document.getElementById('user-search').value = '';
+            document.getElementById('mobile-user-search').value = '';
+            
+            displayUsers(allUsers);
+            updateStats(allUsers);
+        }
+
+        function viewUserDetails(userId) {
+            const user = allUsers.find(u => u._id === userId);
+            if (!user) return;
+
+            currentUserId = userId;
+            
+            // Populate modal with user details
+            document.getElementById('modal-user-name').textContent = user.name || 'Unknown User';
+            document.getElementById('modal-user-id').textContent = user._id;
+            document.getElementById('modal-full-name').textContent = user.name || 'Not provided';
+            document.getElementById('modal-user-email').textContent = user.email;
+            document.getElementById('modal-user-phone').textContent = user.phone || 'Not provided';
+            document.getElementById('modal-join-date').textContent = new Date(user.createdAt).toLocaleString('en-IN');
+            
+            // Role and status
+            const roleElement = document.getElementById('modal-user-role');
+            roleElement.textContent = user.role || 'user';
+            roleElement.className = `role-badge role-${user.role || 'user'}`;
+            
+            const statusElement = document.getElementById('modal-user-status');
+            statusElement.textContent = user.status || 'active';
+            statusElement.className = `status-badge status-${user.status || 'active'}`;
+            
+            // Last login
+            document.getElementById('modal-last-login').textContent = 
+                user.lastLogin ? new Date(user.lastLogin).toLocaleString('en-IN') : 'Never';
+            
+            // Email verification
+            const emailVerifiedElement = document.getElementById('modal-email-verified');
+            emailVerifiedElement.textContent = user.emailVerified ? 'Verified' : 'Not Verified';
+            emailVerifiedElement.className = `status-badge status-${user.emailVerified ? 'active' : 'inactive'}`;
+            
+            // Statistics (placeholder - you would need to fetch this data)
+            document.getElementById('modal-total-orders').textContent = user.orderCount || 0;
+            document.getElementById('modal-total-spent').textContent = `₹${user.totalSpent || 0}`;
+            document.getElementById('modal-pending-orders').textContent = user.pendingOrders || 0;
+            document.getElementById('modal-completed-orders').textContent = user.completedOrders || 0;
+            
+            // Role select
+            document.getElementById('modal-role-select').value = user.role || 'user';
+
+            // Show modal
+            document.getElementById('user-modal').style.display = 'block';
+        }
+
+        async function updateUserRole() {
+            const role = document.getElementById('modal-role-select').value;
+            try {
+                const response = await fetch(`/api/admin/users/${currentUserId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ role })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('User role updated successfully');
+                    closeModal();
+                    loadUsers();
                 } else {
-                    errorDiv.querySelector('p').textContent = `Error loading users: ${error.message}. <button class="btn" onclick="retryLoadUsers()">Retry</button> or contact support.`;
+                    alert(data.message || 'Failed to update role');
+                }
+            } catch (error) {
+                console.error('Error updating role:', error);
+                alert('Error updating user role');
+            }
+        }
+
+        function editUserRole(userId) {
+            currentUserId = userId;
+            const user = allUsers.find(u => u._id === userId);
+            if (user) {
+                const newRole = prompt('Enter new role (user/admin):', user.role || 'user');
+                if (newRole && ['user', 'admin'].includes(newRole.toLowerCase())) {
+                    updateUserRoleDirect(userId, newRole.toLowerCase());
+                } else if (newRole) {
+                    alert('Invalid role. Please use: user or admin.');
                 }
             }
         }
 
-        async function updateUserRole(id) {
-            const role = document.getElementById(`role-${id}`).value;
+        async function updateUserRoleDirect(userId, role) {
             try {
-                const response = await fetch(`/api/admin/users/${id}`, {
+                const response = await fetch(`/api/admin/users/${userId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -133,9 +575,158 @@
             }
         }
 
+        function createUser() {
+            document.getElementById('create-user-form').reset();
+            document.getElementById('create-user-modal').style.display = 'block';
+        }
+
+        function closeCreateUserModal() {
+            document.getElementById('create-user-modal').style.display = 'none';
+        }
+
+        document.getElementById('create-user-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                name: document.getElementById('new-user-name').value.trim(),
+                email: document.getElementById('new-user-email').value.trim(),
+                password: document.getElementById('new-user-password').value,
+                phone: document.getElementById('new-user-phone').value.trim(),
+                role: document.getElementById('new-user-role').value
+            };
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('User created successfully');
+                    closeCreateUserModal();
+                    loadUsers();
+                } else {
+                    alert(data.message || 'Failed to create user');
+                }
+            } catch (error) {
+                console.error('Error creating user:', error);
+                alert('Error creating user');
+            }
+        });
+
+        function deleteUserPrompt(userId) {
+            const user = allUsers.find(u => u._id === userId);
+            if (user && confirm(`Are you sure you want to delete user "${user.name || user.email}"? This action cannot be undone.`)) {
+                deleteUser(userId);
+            }
+        }
+
+        async function deleteUser() {
+            try {
+                const response = await fetch(`/api/admin/users/${currentUserId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('User deleted successfully');
+                    closeModal();
+                    loadUsers();
+                } else {
+                    alert(data.message || 'Failed to delete user');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Error deleting user');
+            }
+        }
+
+        function sendResetPassword() {
+            alert('Password reset email would be sent to the user.');
+        }
+
+        function toggleUserStatus() {
+            alert('User status would be toggled between active/inactive.');
+        }
+
+        function exportUsers() {
+            alert('Export functionality would generate a CSV/Excel file of users.');
+        }
+
+        function refreshUsers() {
+            loadUsers();
+        }
+
+        function closeModal() {
+            document.getElementById('user-modal').style.display = 'none';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('no-users').style.display = 'none';
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showNoUsers() {
+            document.getElementById('no-users').style.display = 'block';
+            document.getElementById('users-table-body').innerHTML = '';
+        }
+
+        function showError(error) {
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            
+            if (error.message.includes('404')) {
+                errorText.textContent = 'The server returned a 404 (Not Found) error. This may indicate the /api/admin/users endpoint is unavailable. Please check if the API endpoint exists and is properly configured.';
+            } else if (error.message.includes('401') || error.message.includes('403')) {
+                errorText.textContent = 'Access denied. You may not have permission to view users, or your session has expired.';
+            } else if (error.message.includes('500')) {
+                errorText.textContent = 'Server error. Please try again later or contact support if the problem persists.';
+            } else {
+                errorText.textContent = `Error loading users: ${error.message}. Please check your connection and try again.`;
+            }
+            
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
         function retryLoadUsers() {
             loadUsers();
         }
+
+        function contactSupport() {
+            window.location.href = 'mailto:help.astroskulture@gmail.com?subject=Admin%20Users%20Page%20Error';
+        }
+
+        // Event Listeners
+        document.getElementById('search-users').addEventListener('input', filterUsers);
+        document.getElementById('user-search').addEventListener('input', filterUsers);
+        document.getElementById('mobile-user-search').addEventListener('input', filterUsers);
+
+        // Modal close events
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', function() {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
