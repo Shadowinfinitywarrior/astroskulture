@@ -11,41 +11,81 @@
         <div class="logo">
             <img src="logo.png" alt="Astros Kulture">
         </div>
-        <div class="menu-toggle">☰</div>
+        <div class="mobile-controls">
+            <div class="mobile-search">
+                <input type="text" placeholder="Search products..." id="mobile-product-search">
+            </div>
+            <div class="menu-toggle">☰</div>
+        </div>
         <ul class="nav-links">
             <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
-            <li><a href="admin-products.html">Products</a></li>
+            <li><a href="admin-products.html" class="active">Products</a></li>
             <li><a href="admin-orders.html">Orders</a></li>
             <li><a href="admin-users.html">Users</a></li>
             <li><a href="#" onclick="logout()">Logout</a></li>
+            <li class="desktop-search">
+                <input type="text" placeholder="Search products..." id="product-search">
+            </li>
         </ul>
     </nav>
 
     <section class="admin fade-in">
-        <h2>Manage Products</h2>
-        
+        <div class="admin-header">
+            <h2>Manage Products</h2>
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>Total Products</h3>
+                    <span id="total-products">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>In Stock</h3>
+                    <span id="in-stock-products">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Low Stock</h3>
+                    <span id="low-stock-products">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Out of Stock</h3>
+                    <span id="out-of-stock-products">0</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Search and Filter Bar -->
         <div class="admin-toolbar">
-            <div class="search-box">
-                <input type="text" id="search-products" placeholder="Search products..." onkeyup="filterProducts()">
+            <div class="search-filters">
+                <input type="text" id="search-products" placeholder="Search by name, brand, category..." onkeyup="filterProducts()">
                 <select id="category-filter" onchange="filterProducts()">
                     <option value="all">All Categories</option>
-                    <option value="oversized">Oversized</option>
-                    <option value="normal">Normal</option>
+                    <option value="oversized">Oversized T-shirts</option>
+                    <option value="normal">Normal T-shirts</option>
+                    <option value="shirts">Shirts</option>
+                    <option value="pants">Men Cotton Pants</option>
+                    <option value="jackets">Jackets</option>
+                    <option value="joggers">Joggers</option>
                 </select>
                 <select id="stock-filter" onchange="filterProducts()">
                     <option value="all">All Stock</option>
-                    <option value="in-stock">In Stock</option>
-                    <option value="low-stock">Low Stock</option>
+                    <option value="in-stock">In Stock (>10)</option>
+                    <option value="low-stock">Low Stock (1-10)</option>
                     <option value="out-of-stock">Out of Stock</option>
                 </select>
+                <select id="status-filter" onchange="filterProducts()">
+                    <option value="all">All Status</option>
+                    <option value="featured">Featured</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
             </div>
-            <button class="btn" onclick="toggleProductForm()" id="toggle-form-btn">+ Add New Product</button>
+            <button class="btn primary-btn" onclick="toggleProductForm()" id="toggle-form-btn">
+                <span>+</span> Add New Product
+            </button>
         </div>
 
-        <!-- Product Form (Initially hidden) -->
-        <form id="product-form" class="home-config-form slide-in-left" style="display: none;">
+        <!-- Product Form -->
+        <form id="product-form" class="product-form slide-in-left" style="display: none;">
             <div class="form-header">
                 <h3 id="form-title">Add New Product</h3>
                 <button type="button" class="close-btn" onclick="toggleProductForm()">×</button>
@@ -53,70 +93,209 @@
             
             <input type="hidden" id="product-id">
             
-            <!-- Basic Information -->
-            <div class="form-section">
-                <h3>Basic Information</h3>
-                <div class="form-row">
-                    <input type="text" id="product-name" placeholder="Product Name" required>
-                    <input type="text" id="product-category" placeholder="Category (oversized/normal)" required>
+            <div class="form-sections">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h4>Basic Information</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-name">Product Name *</label>
+                            <input type="text" id="product-name" placeholder="e.g., MUSIC OVERSIZED HEAVYWEIGHT T-SHIRT" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-brand">Brand *</label>
+                            <input type="text" id="product-brand" placeholder="e.g., SPACEOUT, ASOS DESIGN" value="Astros Kulture" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-category">Category *</label>
+                            <select id="product-category" required>
+                                <option value="">Select Category</option>
+                                <option value="oversized">Oversized T-shirts</option>
+                                <option value="normal">Normal T-shirts</option>
+                                <option value="shirts">Shirts</option>
+                                <option value="pants">Men Cotton Pants</option>
+                                <option value="jackets">Jackets</option>
+                                <option value="joggers">Joggers</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-fit">Fit Type</label>
+                            <select id="product-fit">
+                                <option value="regular">Regular</option>
+                                <option value="oversized">Oversized</option>
+                                <option value="slim">Slim</option>
+                                <option value="baggy">Baggy</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <input type="number" id="product-price" placeholder="Current Price" step="0.01" min="0" required>
-                    <input type="number" id="product-original-price" placeholder="Original Price (for discount)" step="0.01" min="0">
-                    <input type="number" id="product-stock" placeholder="Stock Quantity" min="0" value="0" required>
+
+                <!-- Pricing -->
+                <div class="form-section">
+                    <h4>Pricing & Inventory</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-price">Current Price (₹) *</label>
+                            <input type="number" id="product-price" placeholder="999.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-original-price">Original Price (₹)</label>
+                            <input type="number" id="product-original-price" placeholder="1399.00" step="0.01" min="0">
+                            <small>Leave empty if no discount</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-stock">Stock Quantity *</label>
+                            <input type="number" id="product-stock" placeholder="50" min="0" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-sku">SKU</label>
+                            <input type="text" id="product-sku" placeholder="AK-TS-001">
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Product Images -->
-            <div class="form-section">
-                <h3>Product Images</h3>
-                <small>Enter image URLs (up to 5 images)</small>
-                <div class="image-urls">
-                    <input type="text" id="product-image1" placeholder="Image URL 1">
-                    <input type="text" id="product-image2" placeholder="Image URL 2">
-                    <input type="text" id="product-image3" placeholder="Image URL 3">
-                    <input type="text" id="product-image4" placeholder="Image URL 4">
-                    <input type="text" id="product-image5" placeholder="Image URL 5">
+                <!-- Product Images -->
+                <div class="form-section">
+                    <h4>Product Images</h4>
+                    <small>Enter image URLs (up to 5 images, first image will be main display)</small>
+                    <div class="image-urls-grid">
+                        <div class="form-group">
+                            <label>Main Image URL *</label>
+                            <input type="text" id="product-image1" placeholder="https://example.com/image1.jpg" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL 2</label>
+                            <input type="text" id="product-image2" placeholder="https://example.com/image2.jpg">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL 3</label>
+                            <input type="text" id="product-image3" placeholder="https://example.com/image3.jpg">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL 4</label>
+                            <input type="text" id="product-image4" placeholder="https://example.com/image4.jpg">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL 5</label>
+                            <input type="text" id="product-image5" placeholder="https://example.com/image5.jpg">
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Product Description -->
-            <div class="form-section">
-                <h3>Product Description</h3>
-                <textarea id="product-description" placeholder="Short Description (appears in product listings)"></textarea>
-                <textarea id="product-detailed-description" placeholder="Detailed Description (supports HTML, appears on product page)"></textarea>
-            </div>
-
-            <!-- Product Details -->
-            <div class="form-section">
-                <h3>Product Details</h3>
-                <textarea id="product-details" placeholder="Enter product details, one per line
-Example: 
-Unisex, Oversized Comfort Fit
-250-260 GSM Looper Cotton
-High Density Puff Print"></textarea>
-            </div>
-
-            <!-- Care Instructions -->
-            <div class="form-section">
-                <h3>Care Instructions</h3>
-                <textarea id="product-care-instructions" placeholder="Enter care instructions, one per line
-Example:
-Machine Reverse Wash
-Steam Iron Only
-Do Not Bleach"></textarea>
-            </div>
-
-            <!-- Additional Information -->
-            <div class="form-section">
-                <h3>Additional Information</h3>
-                <div class="form-row">
-                    <input type="text" id="product-color" placeholder="Color">
-                    <input type="text" id="product-fabric" placeholder="Fabric">
+                <!-- Product Description -->
+                <div class="form-section">
+                    <h4>Product Description</h4>
+                    <div class="form-group">
+                        <label for="product-description">Short Description *</label>
+                        <textarea id="product-description" placeholder="Brief description for product listings..." rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-detailed-description">Detailed Description</label>
+                        <textarea id="product-detailed-description" placeholder="Full product description with features, benefits... (supports HTML)" rows="5"></textarea>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <input type="text" id="product-print-type" placeholder="Print Type">
-                    <input type="text" id="product-delivery-time" placeholder="Delivery Time">
+
+                <!-- Product Specifications -->
+                <div class="form-section">
+                    <h4>Product Specifications</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-color">Color</label>
+                            <input type="text" id="product-color" placeholder="e.g., Black, White, Navy Blue">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-fabric">Fabric Material *</label>
+                            <input type="text" id="product-fabric" placeholder="e.g., 100% Cotton, Heavyweight" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-print-type">Print Type</label>
+                            <input type="text" id="product-print-type" placeholder="e.g., Puff Print, Screen Print">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-material">Material Composition</label>
+                            <input type="text" id="product-material" placeholder="e.g., 250-260 GSM Looper Cotton" value="100% Cotton">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sizes Available -->
+                <div class="form-section">
+                    <h4>Available Sizes</h4>
+                    <div class="sizes-checkbox">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="sizes" value="S" checked> S
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="sizes" value="M" checked> M
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="sizes" value="L" checked> L
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="sizes" value="XL" checked> XL
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="sizes" value="XXL"> XXL
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="form-section">
+                    <h4>Product Details</h4>
+                    <div class="form-group">
+                        <label for="product-details">Key Features & Details</label>
+                        <textarea id="product-details" placeholder="Enter key features, one per line:
+• Unisex, Oversized Comfort Fit
+• 250-260 GSM Looper Cotton
+• High Density Puff Print
+• Machine Washable" rows="6"></textarea>
+                    </div>
+                </div>
+
+                <!-- Care Instructions -->
+                <div class="form-section">
+                    <h4>Care Instructions</h4>
+                    <div class="form-group">
+                        <label for="product-care-instructions">Care & Maintenance</label>
+                        <textarea id="product-care-instructions" placeholder="Enter care instructions, one per line:
+• Machine Reverse Wash
+• Steam Iron Only
+• Do Not Bleach
+• Dry in Shade" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h4>Additional Information</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-delivery-time">Delivery Time</label>
+                            <input type="text" id="product-delivery-time" placeholder="e.g., 3-5 business days" value="3-7 business days">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-rating">Initial Rating</label>
+                            <select id="product-rating">
+                                <option value="4.5">4.5 ★</option>
+                                <option value="4.0">4.0 ★</option>
+                                <option value="5.0">5.0 ★</option>
+                                <option value="3.5">3.5 ★</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-review-count">Initial Review Count</label>
+                            <input type="number" id="product-review-count" placeholder="0" min="0" value="0">
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="product-featured"> Featured Product
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="product-active" checked> Active Product
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -128,26 +307,64 @@ Do Not Bleach"></textarea>
         </form>
 
         <!-- Products Grid -->
-        <div class="products-stats">
-            <span id="products-count">0 products</span>
-            <span id="stock-summary"></span>
+        <div class="products-grid-container">
+            <div class="products-header">
+                <div class="products-info">
+                    <span id="products-count" class="count-badge">0 products</span>
+                    <span id="filter-info" class="filter-info"></span>
+                </div>
+                <div class="products-actions">
+                    <button class="btn secondary-btn" onclick="exportProducts()">Export Products</button>
+                    <button class="btn secondary-btn" onclick="bulkUpdateStock()">Bulk Stock Update</button>
+                </div>
+            </div>
+            
+            <div id="products" class="admin-products-grid"></div>
         </div>
-        
-        <div id="products" class="admin-products-grid"></div>
         
         <!-- Loading State -->
         <div id="loading" class="loading-state">
             <div class="loading-spinner"></div>
             <p>Loading products...</p>
         </div>
+
+        <!-- No Products State -->
+        <div id="no-products" class="no-data-state" style="display: none;">
+            <div class="no-data-content">
+                <h3>No Products Found</h3>
+                <p>There are no products matching your criteria.</p>
+                <button class="btn primary-btn" onclick="resetFilters()">Clear Filters</button>
+                <button class="btn secondary-btn" onclick="toggleProductForm()">Add New Product</button>
+            </div>
+        </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
-        <div class="footer-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-            <a href="#">Return Policy</a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                <p><strong>WHATSAPP:</strong> 7871658830</p>
+                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html">Store Front</a>
+                <a href="admin.html">Admin Dashboard</a>
+                <a href="admin-products.html">Manage Products</a>
+                <a href="admin-orders.html">Manage Orders</a>
+            </div>
+            <div class="footer-section">
+                <h3>Policies</h3>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Return Policy</a>
+                <a href="#">Shipping Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
@@ -188,38 +405,23 @@ Do Not Bleach"></textarea>
                     allProducts = data.products;
                     displayProducts(allProducts);
                     updateStats(allProducts);
+                    hideLoading();
                 } else {
-                    document.getElementById('products').innerHTML = `
-                        <div class="no-products">
-                            <h3>No Products Found</h3>
-                            <p>Get started by adding your first product!</p>
-                            <button class="btn" onclick="toggleProductForm()">Add First Product</button>
-                        </div>
-                    `;
+                    showNoProducts();
+                    hideLoading();
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
-                document.getElementById('products').innerHTML = `
-                    <div class="error-state">
-                        <h3>Error Loading Products</h3>
-                        <p>Please check your connection and try again.</p>
-                        <button class="btn" onclick="loadProducts()">Retry</button>
-                    </div>
-                `;
-            } finally {
+                showError('Error loading products. Please try again.');
                 hideLoading();
             }
         }
 
         function displayProducts(products) {
             const container = document.getElementById('products');
+            
             if (products.length === 0) {
-                container.innerHTML = `
-                    <div class="no-products">
-                        <h3>No Products Match Your Search</h3>
-                        <p>Try adjusting your filters or search terms.</p>
-                    </div>
-                `;
+                showNoProducts();
                 return;
             }
 
@@ -228,22 +430,24 @@ Do Not Bleach"></textarea>
                     Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
                 
                 const stockStatus = getStockStatus(product.stock || 0);
+                const statusClass = `status-${stockStatus}`;
                 
                 return `
-                    <div class="product-item" data-category="${product.category}" data-stock="${stockStatus}">
+                    <div class="product-card admin-product-card" data-category="${product.category}" data-stock="${stockStatus}">
                         <div class="product-image">
                             ${product.images && product.images.length > 0 ? 
                                 `<img src="${product.images[0]}" alt="${product.name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                 <div class="no-image" style="display: none;">No Image</div>` : 
-                                '<div class="no-image">No Image</div>'
+                                     onerror="this.src='logo.png'">` : 
+                                `<div class="no-image">No Image</div>`
                             }
                             ${discount > 0 ? `<div class="discount-badge">${discount}% OFF</div>` : ''}
-                            <div class="stock-badge ${stockStatus}">${stockStatus.replace('-', ' ')}</div>
+                            <div class="stock-badge ${statusClass}">${stockStatus.replace('-', ' ')}</div>
+                            ${product.featured ? `<div class="featured-badge">Featured</div>` : ''}
                         </div>
                         <div class="product-info">
                             <h4 class="product-name">${product.name}</h4>
-                            <p class="product-category">${product.category}</p>
+                            <p class="product-brand">${product.brand || 'Astros Kulture'}</p>
+                            <p class="product-category">${product.category} • ${product.fit || 'Regular'} Fit</p>
                             <div class="price-section">
                                 <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
                                 ${product.originalPrice && product.originalPrice > product.price ? 
@@ -252,31 +456,43 @@ Do Not Bleach"></textarea>
                                 }
                             </div>
                             <div class="product-meta">
-                                <span class="meta-item">
+                                <div class="meta-item">
                                     <strong>Stock:</strong> ${product.stock || 0}
-                                </span>
-                                <span class="meta-item">
+                                </div>
+                                <div class="meta-item">
                                     <strong>Color:</strong> ${product.color || 'N/A'}
-                                </span>
-                                <span class="meta-item">
-                                    <strong>Images:</strong> ${product.images ? product.images.length : 0}
-                                </span>
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Sizes:</strong> ${product.sizes ? product.sizes.join(', ') : 'M, L, XL'}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Rating:</strong> ${product.rating || 4.0} ★ (${product.reviewCount || 0})
+                                </div>
                             </div>
                             <p class="created-date">
-                                Created: ${new Date(product.createdAt || Date.now()).toLocaleDateString('en-IN')}
+                                Created: ${new Date(product.createdAt).toLocaleDateString('en-IN')}
                             </p>
                         </div>
                         <div class="product-actions">
                             <button class="btn edit-btn" onclick="editProduct('${product._id}')" title="Edit Product">
                                 <span>✏️ Edit</span>
                             </button>
+                            <button class="btn view-btn" onclick="viewProduct('${product._id}')" title="View Product">
+                                <span>👁️ View</span>
+                            </button>
                             <button class="btn delete-btn" onclick="deleteProduct('${product._id}')" title="Delete Product">
                                 <span>🗑️ Delete</span>
+                            </button>
+                            <button class="btn stock-btn" onclick="quickUpdateStock('${product._id}', ${product.stock || 0})" title="Update Stock">
+                                <span>📦 Stock</span>
                             </button>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            // Hide no products message
+            document.getElementById('no-products').style.display = 'none';
         }
 
         function getStockStatus(stock) {
@@ -290,28 +506,49 @@ Do Not Bleach"></textarea>
             const inStock = products.filter(p => (p.stock || 0) > 10).length;
             const lowStock = products.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= 10).length;
             const outOfStock = products.filter(p => (p.stock || 0) === 0).length;
+            const featured = products.filter(p => p.featured).length;
+            
+            document.getElementById('total-products').textContent = totalProducts;
+            document.getElementById('in-stock-products').textContent = inStock;
+            document.getElementById('low-stock-products').textContent = lowStock;
+            document.getElementById('out-of-stock-products').textContent = outOfStock;
             
             document.getElementById('products-count').textContent = `${totalProducts} products`;
-            document.getElementById('stock-summary').textContent = 
-                `• ${inStock} in stock • ${lowStock} low stock • ${outOfStock} out of stock`;
+            document.getElementById('filter-info').textContent = `• ${inStock} in stock • ${lowStock} low stock • ${outOfStock} out of stock • ${featured} featured`;
         }
 
         function filterProducts() {
             const searchTerm = document.getElementById('search-products').value.toLowerCase();
             const categoryFilter = document.getElementById('category-filter').value;
             const stockFilter = document.getElementById('stock-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
             
             let filtered = allProducts.filter(product => {
-                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
-                                    (product.description && product.description.toLowerCase().includes(searchTerm));
+                const matchesSearch = 
+                    product.name.toLowerCase().includes(searchTerm) || 
+                    (product.brand && product.brand.toLowerCase().includes(searchTerm)) ||
+                    (product.description && product.description.toLowerCase().includes(searchTerm));
                 const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
                 const matchesStock = stockFilter === 'all' || getStockStatus(product.stock || 0) === stockFilter;
+                const matchesStatus = statusFilter === 'all' || 
+                    (statusFilter === 'featured' && product.featured) ||
+                    (statusFilter === 'active' && product.active !== false) ||
+                    (statusFilter === 'inactive' && product.active === false);
                 
-                return matchesSearch && matchesCategory && matchesStock;
+                return matchesSearch && matchesCategory && matchesStock && matchesStatus;
             });
             
             displayProducts(filtered);
             updateStats(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-products').value = '';
+            document.getElementById('category-filter').value = 'all';
+            document.getElementById('stock-filter').value = 'all';
+            document.getElementById('status-filter').value = 'all';
+            displayProducts(allProducts);
+            updateStats(allProducts);
         }
 
         function toggleProductForm() {
@@ -320,11 +557,11 @@ Do Not Bleach"></textarea>
             
             if (form.style.display === 'none') {
                 form.style.display = 'block';
-                toggleBtn.textContent = '− Hide Form';
+                toggleBtn.innerHTML = '<span>−</span> Hide Form';
                 form.scrollIntoView({ behavior: 'smooth' });
             } else {
                 form.style.display = 'none';
-                toggleBtn.textContent = '+ Add New Product';
+                toggleBtn.innerHTML = '<span>+</span> Add New Product';
                 resetProductForm();
             }
         }
@@ -332,6 +569,7 @@ Do Not Bleach"></textarea>
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('products').style.display = 'none';
+            document.getElementById('no-products').style.display = 'none';
         }
 
         function hideLoading() {
@@ -339,7 +577,16 @@ Do Not Bleach"></textarea>
             document.getElementById('products').style.display = 'grid';
         }
 
-        // Form submission and other functions remain the same as your original code
+        function showNoProducts() {
+            document.getElementById('no-products').style.display = 'block';
+            document.getElementById('products').innerHTML = '';
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        // Form submission
         document.getElementById('product-form').addEventListener('submit', async e => {
             e.preventDefault();
             
@@ -352,6 +599,10 @@ Do Not Bleach"></textarea>
                 document.getElementById('product-image5').value
             ].filter(img => img.trim() !== '');
             
+            // Get selected sizes
+            const sizeCheckboxes = document.querySelectorAll('input[name="sizes"]:checked');
+            const sizes = Array.from(sizeCheckboxes).map(cb => cb.value);
+            
             // Parse details and care instructions from textarea
             const detailsText = document.getElementById('product-details').value;
             const details = detailsText.split('\n').filter(line => line.trim() !== '');
@@ -361,7 +612,9 @@ Do Not Bleach"></textarea>
             
             const product = {
                 name: document.getElementById('product-name').value.trim(),
-                category: document.getElementById('product-category').value.trim(),
+                brand: document.getElementById('product-brand').value.trim(),
+                category: document.getElementById('product-category').value,
+                fit: document.getElementById('product-fit').value,
                 price: parseFloat(document.getElementById('product-price').value),
                 originalPrice: parseFloat(document.getElementById('product-original-price').value) || null,
                 stock: parseInt(document.getElementById('product-stock').value) || 0,
@@ -372,10 +625,18 @@ Do Not Bleach"></textarea>
                 careInstructions: careInstructions,
                 color: document.getElementById('product-color').value.trim(),
                 fabric: document.getElementById('product-fabric').value.trim(),
+                material: document.getElementById('product-material').value.trim(),
                 printType: document.getElementById('product-print-type').value.trim(),
-                deliveryTime: document.getElementById('product-delivery-time').value.trim()
+                deliveryTime: document.getElementById('product-delivery-time').value.trim(),
+                sizes: sizes,
+                rating: parseFloat(document.getElementById('product-rating').value),
+                reviewCount: parseInt(document.getElementById('product-review-count').value) || 0,
+                featured: document.getElementById('product-featured').checked,
+                active: document.getElementById('product-active').checked,
+                sku: document.getElementById('product-sku').value.trim()
             };
             
+            // Validation
             if (product.price < 0) {
                 alert('Price cannot be negative');
                 return;
@@ -383,6 +644,11 @@ Do Not Bleach"></textarea>
             
             if (product.stock < 0) {
                 alert('Stock cannot be negative');
+                return;
+            }
+            
+            if (sizes.length === 0) {
+                alert('Please select at least one size');
                 return;
             }
             
@@ -425,18 +691,27 @@ Do Not Bleach"></textarea>
                 if (data.success) {
                     const product = data.product;
                     
+                    // Fill form with product data
                     document.getElementById('product-id').value = product._id;
                     document.getElementById('product-name').value = product.name || '';
+                    document.getElementById('product-brand').value = product.brand || 'Astros Kulture';
                     document.getElementById('product-category').value = product.category || '';
+                    document.getElementById('product-fit').value = product.fit || 'regular';
                     document.getElementById('product-price').value = product.price || '';
                     document.getElementById('product-original-price').value = product.originalPrice || '';
                     document.getElementById('product-stock').value = product.stock || 0;
+                    document.getElementById('product-sku').value = product.sku || '';
                     document.getElementById('product-description').value = product.description || '';
                     document.getElementById('product-detailed-description').value = product.detailedDescription || '';
                     document.getElementById('product-color').value = product.color || '';
                     document.getElementById('product-fabric').value = product.fabric || '';
+                    document.getElementById('product-material').value = product.material || '';
                     document.getElementById('product-print-type').value = product.printType || '';
                     document.getElementById('product-delivery-time').value = product.deliveryTime || '';
+                    document.getElementById('product-rating').value = product.rating || 4.5;
+                    document.getElementById('product-review-count').value = product.reviewCount || 0;
+                    document.getElementById('product-featured').checked = product.featured || false;
+                    document.getElementById('product-active').checked = product.active !== false;
                     
                     // Handle images array
                     const imageArray = Array.isArray(product.images) ? product.images : [];
@@ -446,6 +721,12 @@ Do Not Bleach"></textarea>
                     document.getElementById('product-image4').value = imageArray[3] || '';
                     document.getElementById('product-image5').value = imageArray[4] || '';
                     
+                    // Handle sizes array
+                    const sizeArray = Array.isArray(product.sizes) ? product.sizes : ['M', 'L', 'XL'];
+                    document.querySelectorAll('input[name="sizes"]').forEach(checkbox => {
+                        checkbox.checked = sizeArray.includes(checkbox.value);
+                    });
+                    
                     // Handle details array
                     const detailsArray = Array.isArray(product.details) ? product.details : [];
                     document.getElementById('product-details').value = detailsArray.join('\n');
@@ -454,11 +735,16 @@ Do Not Bleach"></textarea>
                     const careArray = Array.isArray(product.careInstructions) ? product.careInstructions : [];
                     document.getElementById('product-care-instructions').value = careArray.join('\n');
                     
+                    // Update form title and submit button
                     document.getElementById('product-submit').textContent = 'Update Product';
                     document.getElementById('form-title').textContent = 'Edit Product';
                     
                     // Show form and scroll to it
-                    toggleProductForm();
+                    const form = document.getElementById('product-form');
+                    if (form.style.display === 'none') {
+                        toggleProductForm();
+                    }
+                    form.scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert('Failed to load product for editing');
                 }
@@ -468,11 +754,25 @@ Do Not Bleach"></textarea>
             }
         }
 
+        function viewProduct(id) {
+            window.open(`product.html?id=${id}`, '_blank');
+        }
+
         function resetProductForm() {
             document.getElementById('product-form').reset();
             document.getElementById('product-id').value = '';
             document.getElementById('product-submit').textContent = 'Add Product';
             document.getElementById('form-title').textContent = 'Add New Product';
+            document.getElementById('product-brand').value = 'Astros Kulture';
+            document.getElementById('product-material').value = '100% Cotton';
+            document.getElementById('product-delivery-time').value = '3-7 business days';
+            document.getElementById('product-rating').value = '4.5';
+            document.getElementById('product-active').checked = true;
+            
+            // Set default sizes
+            document.querySelectorAll('input[name="sizes"]').forEach(checkbox => {
+                checkbox.checked = ['S', 'M', 'L', 'XL'].includes(checkbox.value);
+            });
         }
 
         async function deleteProduct(id) {
@@ -495,6 +795,51 @@ Do Not Bleach"></textarea>
                 }
             }
         }
+
+        function quickUpdateStock(productId, currentStock) {
+            const newStock = prompt(`Update stock quantity for this product:\nCurrent stock: ${currentStock}`, currentStock);
+            if (newStock !== null && !isNaN(newStock) && newStock >= 0) {
+                updateStock(productId, parseInt(newStock));
+            }
+        }
+
+        async function updateStock(productId, newStock) {
+            try {
+                const response = await fetch(`/api/admin/products/${productId}/stock`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ stock: newStock })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Stock updated successfully');
+                    loadProducts();
+                } else {
+                    alert(data.message || 'Failed to update stock');
+                }
+            } catch (error) {
+                console.error('Error updating stock:', error);
+                alert('Error updating stock');
+            }
+        }
+
+        function exportProducts() {
+            alert('Export functionality would be implemented here');
+            // This would typically generate a CSV or Excel file of all products
+        }
+
+        function bulkUpdateStock() {
+            alert('Bulk stock update functionality would be implemented here');
+            // This would open a modal for updating multiple products' stock at once
+        }
+
+        // Event Listeners for search and mobile search
+        document.getElementById('search-products').addEventListener('input', filterProducts);
+        document.getElementById('product-search').addEventListener('input', filterProducts);
+        document.getElementById('mobile-product-search').addEventListener('input', filterProducts);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
