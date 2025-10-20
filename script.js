@@ -15,20 +15,36 @@ function updateAccountMenu() {
   }
 }
 
-function addToCart(productId) {
+function addToCart(productId, size = 'M', quantity = 1) {
   let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-  cart[productId] = (cart[productId] || 0) + 1;
+  const itemKey = `${productId}_${size}`;
+  
+  if (cart[itemKey]) {
+    cart[itemKey].quantity += quantity;
+  } else {
+    cart[itemKey] = {
+      productId: productId,
+      size: size,
+      quantity: quantity,
+      addedAt: new Date().toISOString()
+    };
+  }
+  
   localStorage.setItem('cart', JSON.stringify(cart));
-  alert('Added to cart');
+  showCartNotification('Added to cart');
   updateCartCount();
 }
 
-function removeFromCart(productId) {
+function removeFromCart(productId, size = 'M') {
   let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-  if (cart[productId]) {
-    delete cart[productId];
+  const itemKey = `${productId}_${size}`;
+  
+  if (cart[itemKey]) {
+    delete cart[itemKey];
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
+    showCartNotification('Item removed from cart');
+    
     // Reload cart if on cart page
     if (typeof loadCart === 'function') {
       loadCart();
@@ -36,17 +52,112 @@ function removeFromCart(productId) {
   }
 }
 
+function updateCartItemQuantity(productId, size, change) {
+  let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+  const itemKey = `${productId}_${size}`;
+  
+  if (cart[itemKey]) {
+    const currentQty = cart[itemKey].quantity;
+    const newQty = Math.max(0, currentQty + change);
+    
+    if (newQty === 0) {
+      delete cart[itemKey];
+    } else {
+      cart[itemKey].quantity = newQty;
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    
+    // Reload cart if on cart page
+    if (typeof loadCart === 'function') {
+      loadCart();
+    }
+    
+    // Update product page quantity if exists
+    const quantityElement = document.getElementById(`quantity-${productId}`);
+    if (quantityElement) {
+      quantityElement.textContent = newQty;
+    }
+  }
+}
+
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-  const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-  const cartCount = document.getElementById('cart-count');
-  if (cartCount) {
+  const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+  
+  // Update cart count in navigation
+  const cartCounts = document.querySelectorAll('.cart-count');
+  cartCounts.forEach(cartCount => {
     cartCount.textContent = totalItems;
+    cartCount.style.display = totalItems > 0 ? 'inline' : 'none';
+  });
+  
+  // Update mobile cart count
+  const mobileCart = document.querySelector('.mobile-cart');
+  if (mobileCart) {
+    const existingCount = mobileCart.querySelector('.cart-count');
+    if (existingCount) {
+      existingCount.textContent = totalItems;
+      existingCount.style.display = totalItems > 0 ? 'inline' : 'none';
+    } else if (totalItems > 0) {
+      const countBadge = document.createElement('span');
+      countBadge.className = 'cart-count';
+      countBadge.textContent = totalItems;
+      mobileCart.appendChild(countBadge);
+    }
   }
+  
+  return totalItems;
+}
+
+function showCartNotification(message) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'cart-notification';
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span class="notification-icon">✓</span>
+      <span class="notification-text">${message}</span>
+    </div>
+  `;
+  
+  // Add styles
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 10000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 300);
+  }, 3000);
 }
 
 function logout() {
   localStorage.removeItem('token');
+  localStorage.removeItem('user');
   window.location.href = 'index.html';
 }
 
@@ -55,8 +166,17 @@ function addToWishlist(productId) {
   if (!wishlist.includes(productId)) {
     wishlist.push(productId);
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    alert('Added to wishlist');
+    showCartNotification('Added to wishlist');
+  } else {
+    showCartNotification('Already in wishlist');
   }
+}
+
+function removeFromWishlist(productId) {
+  let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  wishlist = wishlist.filter(id => id !== productId);
+  localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  showCartNotification('Removed from wishlist');
 }
 
 function checkAuth() {
@@ -82,10 +202,21 @@ function changeMainImage(imageSrc) {
   // Update active thumbnail
   document.querySelectorAll('.thumbnail').forEach(thumb => {
     thumb.classList.remove('active');
-    if (thumb.src.includes(imageSrc) || thumb.getAttribute('onclick').includes(imageSrc)) {
+    if (thumb.src === imageSrc || thumb.getAttribute('data-src') === imageSrc) {
       thumb.classList.add('active');
     }
   });
+}
+
+function selectSize(button) {
+  // Remove active class from all size buttons
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Add active class to clicked button
+  button.classList.add('active');
+  return button.getAttribute('data-size');
 }
 
 function switchTab(tabName) {
@@ -112,115 +243,129 @@ function switchTab(tabName) {
   }
 }
 
-function buyNow(productId) {
-  addToCart(productId);
+function buyNow(productId, size = 'M') {
+  const selectedSize = size || getSelectedSize();
+  if (!selectedSize) {
+    alert('Please select a size');
+    return;
+  }
+  addToCart(productId, selectedSize, 1);
   window.location.href = 'cart.html';
 }
 
-function updateProductQuantity(productId, change) {
-  let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-  const currentQty = cart[productId] || 0;
-  const newQty = Math.max(0, currentQty + change);
-  
-  if (newQty === 0) {
-    delete cart[productId];
-  } else {
-    cart[productId] = newQty;
+function buyNowWithSize() {
+  const productId = document.querySelector('[data-product-id]')?.getAttribute('data-product-id');
+  const selectedSize = getSelectedSize();
+  if (!selectedSize) {
+    alert('Please select a size');
+    return;
   }
-  
-  localStorage.setItem('cart', JSON.stringify(cart));
-  updateCartCount();
-  
-  // Reload cart if on cart page
-  if (typeof loadCart === 'function') {
-    loadCart();
+  buyNow(productId, selectedSize);
+}
+
+function getSelectedSize() {
+  const activeSize = document.querySelector('.size-btn.active');
+  return activeSize ? activeSize.getAttribute('data-size') : null;
+}
+
+function addToCartWithSize() {
+  const productId = document.querySelector('[data-product-id]')?.getAttribute('data-product-id');
+  const selectedSize = getSelectedSize();
+  if (!selectedSize) {
+    alert('Please select a size');
+    return;
   }
-  
-  // Update product page quantity if exists
-  const quantityElement = document.getElementById(`quantity-${productId}`);
-  if (quantityElement) {
-    quantityElement.textContent = newQty;
-  }
+  addToCart(productId, selectedSize, 1);
 }
 
 // Search functionality
 function setupSearch() {
-  const searchInput = document.getElementById('search');
-  if (searchInput) {
-    let searchTimeout;
-    
-    searchInput.addEventListener('input', async (e) => {
-      const query = e.target.value.trim();
+  const searchInputs = document.querySelectorAll('#search, #mobile-search');
+  
+  searchInputs.forEach(searchInput => {
+    if (searchInput) {
+      let searchTimeout;
       
-      // Clear previous timeout
-      clearTimeout(searchTimeout);
-      
-      // Remove existing suggestions
-      const existingSuggestions = document.querySelector('.search-suggestions');
-      if (existingSuggestions) {
-        existingSuggestions.remove();
-      }
-      
-      if (query.length < 2) return;
-      
-      // Debounce search
-      searchTimeout = setTimeout(async () => {
-        try {
-          const response = await fetch(`/api/products?search=${encodeURIComponent(query)}`);
-          const data = await response.json();
-          
-          if (data.success && data.products && data.products.length > 0) {
-            const suggestions = document.createElement('div');
-            suggestions.className = 'search-suggestions';
-            suggestions.innerHTML = data.products.map(product => `
-              <a href="product.html?id=${product._id}" class="suggestion-item">
-                <img src="${product.images && product.images.length > 0 ? product.images[0] : 'logo.png'}" alt="${product.name}" onerror="this.src='logo.png'">
-                <div>
-                  <div class="product-name">${product.name}</div>
-                  <div class="product-price">₹${product.price.toFixed(2)}</div>
-                </div>
-              </a>
-            `).join('');
+      searchInput.addEventListener('input', async (e) => {
+        const query = e.target.value.trim();
+        
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+        
+        // Remove existing suggestions
+        const existingSuggestions = document.querySelector('.search-suggestions');
+        if (existingSuggestions) {
+          existingSuggestions.remove();
+        }
+        
+        if (query.length < 2) return;
+        
+        // Debounce search
+        searchTimeout = setTimeout(async () => {
+          try {
+            const response = await fetch(`/api/products/search/suggestions?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
             
-            // Position suggestions below search input
-            const searchRect = searchInput.getBoundingClientRect();
-            suggestions.style.position = 'absolute';
-            suggestions.style.top = `${searchRect.bottom + window.scrollY}px`;
-            suggestions.style.left = `${searchRect.left + window.scrollX}px`;
-            suggestions.style.width = `${searchRect.width}px`;
-            suggestions.style.zIndex = '1000';
-            
-            document.body.appendChild(suggestions);
-            
-            // Remove suggestions when clicking outside or on a suggestion
-            const removeSuggestions = () => {
-              if (suggestions.parentNode) {
-                suggestions.remove();
-              }
-              document.removeEventListener('click', removeSuggestions);
-            };
-            
-            setTimeout(() => {
-              document.addEventListener('click', removeSuggestions);
-            }, 100);
-            
+            if (data.success && data.suggestions && data.suggestions.length > 0) {
+              const suggestions = document.createElement('div');
+              suggestions.className = 'search-suggestions';
+              suggestions.innerHTML = data.suggestions.map(product => `
+                <a href="product.html?id=${product._id}" class="suggestion-item">
+                  <img src="${product.image || 'logo.png'}" alt="${product.name}" onerror="this.src='logo.png'">
+                  <div class="suggestion-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-brand">${product.brand}</div>
+                    <div class="product-price">₹${product.price.toFixed(2)}</div>
+                  </div>
+                </a>
+              `).join('');
+              
+              // Position suggestions below search input
+              const searchRect = searchInput.getBoundingClientRect();
+              suggestions.style.position = 'absolute';
+              suggestions.style.top = `${searchRect.bottom + window.scrollY}px`;
+              suggestions.style.left = `${searchRect.left + window.scrollX}px`;
+              suggestions.style.width = `${searchRect.width}px`;
+              suggestions.style.zIndex = '1000';
+              suggestions.style.background = 'white';
+              suggestions.style.border = '1px solid #ddd';
+              suggestions.style.borderRadius = '4px';
+              suggestions.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+              suggestions.style.maxHeight = '300px';
+              suggestions.style.overflowY = 'auto';
+              
+              document.body.appendChild(suggestions);
+              
+              // Remove suggestions when clicking outside or on a suggestion
+              const removeSuggestions = () => {
+                if (suggestions.parentNode) {
+                  suggestions.remove();
+                }
+                document.removeEventListener('click', removeSuggestions);
+              };
+              
+              setTimeout(() => {
+                document.addEventListener('click', removeSuggestions);
+              }, 100);
+              
+            }
+          } catch (error) {
+            console.error('Search error:', error);
           }
-        } catch (error) {
-          console.error('Search error:', error);
-        }
-      }, 300);
-    });
-    
-    // Clear suggestions when search is cleared
-    searchInput.addEventListener('blur', () => {
-      setTimeout(() => {
-        const suggestions = document.querySelector('.search-suggestions');
-        if (suggestions) {
-          suggestions.remove();
-        }
-      }, 200);
-    });
-  }
+        }, 300);
+      });
+      
+      // Clear suggestions when search is cleared
+      searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+          const suggestions = document.querySelector('.search-suggestions');
+          if (suggestions) {
+            suggestions.remove();
+          }
+        }, 200);
+      });
+    }
+  });
 }
 
 // Mobile menu functionality
@@ -289,8 +434,8 @@ function initImageGallery() {
   
   if (thumbnails.length > 0 && mainImage) {
     thumbnails.forEach(thumb => {
-      thumb.addEventListener('mouseenter', () => {
-        const newSrc = thumb.src;
+      thumb.addEventListener('click', () => {
+        const newSrc = thumb.src || thumb.getAttribute('data-src');
         if (mainImage.src !== newSrc) {
           mainImage.style.opacity = '0';
           setTimeout(() => {
@@ -298,18 +443,22 @@ function initImageGallery() {
             mainImage.style.opacity = '1';
           }, 150);
         }
+        
+        // Update active thumbnail
+        thumbnails.forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
       });
     });
   }
 }
 
 // Load recommended products
-async function loadRecommendedProducts(category, currentProductId) {
+async function loadRecommendedProducts(category, currentProductId, limit = 4) {
   try {
-    const response = await fetch(`/api/products?category=${category}`);
+    const response = await fetch(`/api/products?category=${category}&limit=${limit}`);
     const data = await response.json();
     if (data.success) {
-      const recommended = data.products.filter(p => p._id !== currentProductId).slice(0, 4);
+      const recommended = data.products.filter(p => p._id !== currentProductId).slice(0, limit);
       displayRecommendedProducts(recommended);
     }
   } catch (error) {
@@ -326,33 +475,40 @@ function displayRecommendedProducts(products) {
     return;
   }
   
-  container.innerHTML = products.map(product => `
-    <div class="product-card">
-      <div class="product-image">
-        <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
-             alt="${product.name}" 
-             onerror="this.src='logo.png'"
-             onclick="window.location.href='product.html?id=${product._id}'">
-        ${product.originalPrice && product.originalPrice > product.price ? 
-          `<div class="discount-badge">
-            ${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-          </div>` : ''
-        }
-      </div>
-      <div class="product-info">
-        <h3>${product.name}</h3>
-        <div class="price">
-          <span class="current-price">₹${product.price.toFixed(2)}</span>
-          ${product.originalPrice && product.originalPrice > product.price ? 
-            `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
+  container.innerHTML = products.map(product => {
+    const discount = product.originalPrice && product.originalPrice > product.price ? 
+      Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+    
+    return `
+      <div class="product-card">
+        <div class="product-image">
+          <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
+               alt="${product.name}" 
+               onerror="this.src='logo.png'"
+               onclick="window.location.href='product.html?id=${product._id}'">
+          ${discount > 0 ? 
+            `<div class="discount-badge">${discount}% OFF</div>` : ''
           }
         </div>
-        <button class="btn view-product-btn" onclick="window.location.href='product.html?id=${product._id}'">
-          View Product
-        </button>
+        <div class="product-info">
+          <h3>${product.name}</h3>
+          <div class="rating">
+            <span class="stars">${'★'.repeat(Math.floor(product.rating || 4))}${'☆'.repeat(5-Math.floor(product.rating || 4))}</span>
+            <span class="review-count">(${product.reviewCount || 0})</span>
+          </div>
+          <div class="price">
+            <span class="current-price">₹${product.price.toFixed(2)}</span>
+            ${product.originalPrice && product.originalPrice > product.price ? 
+              `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
+            }
+          </div>
+          <button class="btn view-product-btn" onclick="window.location.href='product.html?id=${product._id}'">
+            View Product
+          </button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // Add to recently viewed
@@ -375,12 +531,23 @@ function initProductPage() {
     if (tabButtons.length > 0) {
       tabButtons.forEach(btn => {
         btn.addEventListener('click', function() {
-          const tabName = this.getAttribute('data-tab');
+          const tabName = this.getAttribute('data-tab') || this.textContent.toLowerCase();
           switchTab(tabName);
         });
       });
     }
   }
+}
+
+// Format currency
+function formatCurrency(amount) {
+  return '₹' + parseFloat(amount).toFixed(2);
+}
+
+// Calculate discount percentage
+function calculateDiscount(originalPrice, currentPrice) {
+  if (!originalPrice || originalPrice <= currentPrice) return 0;
+  return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
 }
 
 // Initialize everything when DOM is loaded
@@ -408,10 +575,16 @@ if (typeof module !== 'undefined' && module.exports) {
     updateCartCount,
     logout,
     addToWishlist,
+    removeFromWishlist,
     checkAuth,
     changeMainImage,
+    selectSize,
     switchTab,
     buyNow,
-    updateProductQuantity
+    buyNowWithSize,
+    addToCartWithSize,
+    updateCartItemQuantity,
+    formatCurrency,
+    calculateDiscount
   };
 }
