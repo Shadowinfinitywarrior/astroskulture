@@ -11,33 +11,180 @@
         <div class="logo">
             <img src="logo.png" alt="Astros Kulture">
         </div>
-        <div class="menu-toggle">☰</div>
+        <div class="mobile-controls">
+            <div class="mobile-search">
+                <input type="text" placeholder="Search orders..." id="mobile-order-search">
+            </div>
+            <div class="menu-toggle">☰</div>
+        </div>
         <ul class="nav-links">
             <li><a href="admin.html">Dashboard</a></li>
             <li><a href="admin-home.html">Home Config</a></li>
             <li><a href="admin-products.html">Products</a></li>
-            <li><a href="admin-orders.html">Orders</a></li>
+            <li><a href="admin-orders.html" class="active">Orders</a></li>
             <li><a href="admin-users.html">Users</a></li>
             <li><a href="#" onclick="logout()">Logout</a></li>
+            <li class="desktop-search">
+                <input type="text" placeholder="Search orders..." id="order-search">
+            </li>
         </ul>
     </nav>
 
     <section class="admin fade-in">
-        <h2>Manage Orders</h2>
-        <div id="orders" class="products-grid"></div>
+        <div class="admin-header">
+            <h2>Manage Orders</h2>
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>Total Orders</h3>
+                    <span id="total-orders">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending</h3>
+                    <span id="pending-orders">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Shipped</h3>
+                    <span id="shipped-orders">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Delivered</h3>
+                    <span id="delivered-orders">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="order-filters">
+            <select id="status-filter">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <select id="date-filter">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+            <input type="date" id="from-date" placeholder="From Date">
+            <input type="date" id="to-date" placeholder="To Date">
+            <button class="btn" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn secondary" onclick="resetFilters()">Reset</button>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="orders-table-container">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order No.</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                    <!-- Orders will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Order Details Modal -->
+        <div id="order-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Order Details - <span id="modal-order-number"></span></h3>
+                <div class="order-details">
+                    <div class="order-info">
+                        <h4>Order Information</h4>
+                        <p><strong>Order Date:</strong> <span id="modal-order-date"></span></p>
+                        <p><strong>Customer:</strong> <span id="modal-customer"></span></p>
+                        <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                        <p><strong>Payment Method:</strong> <span id="modal-payment"></span></p>
+                    </div>
+                    <div class="shipping-info">
+                        <h4>Shipping Address</h4>
+                        <div id="modal-address"></div>
+                    </div>
+                    <div class="order-items">
+                        <h4>Order Items</h4>
+                        <div id="modal-items"></div>
+                    </div>
+                    <div class="order-totals">
+                        <h4>Order Summary</h4>
+                        <p><strong>Subtotal:</strong> ₹<span id="modal-subtotal">0.00</span></p>
+                        <p><strong>Discount:</strong> ₹<span id="modal-discount">0.00</span></p>
+                        <p><strong>GST (18%):</strong> ₹<span id="modal-gst">0.00</span></p>
+                        <p><strong>Total:</strong> ₹<span id="modal-total">0.00</span></p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <select id="modal-status-select">
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <button class="btn" onclick="updateOrderStatus()">Update Status</button>
+                    <button class="btn secondary" onclick="printOrder()">Print Invoice</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading orders...</p>
+        </div>
+
+        <!-- No Orders State -->
+        <div id="no-orders" class="no-data-state" style="display: none;">
+            <h3>No Orders Found</h3>
+            <p>There are no orders matching your criteria.</p>
+        </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 Astros Kulture. Contact: info@astroskulture.com</p>
-        <div class="footer-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-            <a href="#">Return Policy</a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                <p><strong>WHATSAPP:</strong> 7871658830</p>
+                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html">Store Front</a>
+                <a href="admin.html">Admin Dashboard</a>
+                <a href="admin-products.html">Manage Products</a>
+                <a href="admin-orders.html">Manage Orders</a>
+            </div>
+            <div class="footer-section">
+                <h3>Policies</h3>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Return Policy</a>
+                <a href="#">Shipping Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
     <script>
+        let allOrders = [];
+        let currentOrderId = '';
+
         async function checkAdmin() {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -49,7 +196,6 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                // FIX: Changed from data.user.role to data.data.role
                 if (!data.success || data.data.role !== 'admin') {
                     window.location.href = 'login.html';
                     return false;
@@ -62,42 +208,232 @@
         }
 
         async function loadOrders() {
+            showLoading();
             try {
                 const response = await fetch('/api/admin/orders', {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await response.json();
                 if (data.success) {
-                    document.getElementById('orders').innerHTML = data.orders.map(order => `
-                        <div class="order">
-                            <p><strong>Order ID:</strong> ${order._id}</p>
-                            <p><strong>User:</strong> ${order.userEmail || 'N/A'}</p>
-                            <p><strong>Date:</strong> ${new Date(order.createdAt || Date.now()).toLocaleDateString()}</p>
-                            <p><strong>Total:</strong> $${(order.total || 0).toFixed(2)}</p>
-                            <p><strong>Status:</strong> ${order.status || 'pending'}</p>
-                            <p><strong>Items:</strong> ${order.items ? Object.entries(order.items).map(([id, qty]) => `${id} (x${qty})`).join(', ') : 'No items'}</p>
-                            <select class="status-select" id="status-${order._id}">
-                                <option value="pending" ${(order.status || 'pending') === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="shipped" ${(order.status || 'pending') === 'shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="delivered" ${(order.status || 'pending') === 'delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="cancelled" ${(order.status || 'pending') === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                            </select>
-                            <button class="btn" onclick="updateOrderStatus('${order._id}')">Update Status</button>
-                        </div>
-                    `).join('');
+                    allOrders = data.orders;
+                    displayOrders(allOrders);
+                    updateStats(allOrders);
+                    hideLoading();
                 } else {
-                    document.getElementById('orders').innerHTML = '<p>No orders found or access denied.</p>';
+                    showNoOrders();
+                    hideLoading();
                 }
             } catch (error) {
                 console.error('Error loading orders:', error);
-                document.getElementById('orders').innerHTML = '<p>Error loading orders. Please try again.</p>';
+                showError('Error loading orders. Please try again.');
+                hideLoading();
             }
         }
 
-        async function updateOrderStatus(id) {
-            const status = document.getElementById(`status-${id}`).value;
+        function displayOrders(orders) {
+            const tbody = document.getElementById('orders-table-body');
+            
+            if (orders.length === 0) {
+                showNoOrders();
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => {
+                const orderDate = new Date(order.createdAt).toLocaleDateString('en-IN');
+                const totalItems = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+                const statusClass = `status-${order.status || 'pending'}`;
+                
+                return `
+                    <tr class="order-row" data-order-id="${order._id}">
+                        <td class="order-number">${order.orderNumber || 'N/A'}</td>
+                        <td class="customer">${order.userEmail || 'N/A'}</td>
+                        <td class="order-date">${orderDate}</td>
+                        <td class="items-count">${totalItems} items</td>
+                        <td class="order-total">₹${(order.finalTotal || 0).toFixed(2)}</td>
+                        <td class="order-status">
+                            <span class="status-badge ${statusClass}">${order.status || 'pending'}</span>
+                        </td>
+                        <td class="order-actions">
+                            <button class="btn view-btn" onclick="viewOrderDetails('${order._id}')">View</button>
+                            <button class="btn edit-btn" onclick="editOrderStatus('${order._id}')">Edit</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Hide no orders message if we have orders
+            document.getElementById('no-orders').style.display = 'none';
+        }
+
+        function updateStats(orders) {
+            const total = orders.length;
+            const pending = orders.filter(o => o.status === 'pending').length;
+            const shipped = orders.filter(o => o.status === 'shipped').length;
+            const delivered = orders.filter(o => o.status === 'delivered').length;
+
+            document.getElementById('total-orders').textContent = total;
+            document.getElementById('pending-orders').textContent = pending;
+            document.getElementById('shipped-orders').textContent = shipped;
+            document.getElementById('delivered-orders').textContent = delivered;
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+            const fromDate = document.getElementById('from-date').value;
+            const toDate = document.getElementById('to-date').value;
+            const searchTerm = document.getElementById('order-search').value.toLowerCase();
+
+            let filteredOrders = [...allOrders];
+
+            // Status filter
+            if (statusFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+            }
+
+            // Date filter
+            if (dateFilter !== 'all') {
+                const now = new Date();
+                let startDate;
+
+                switch (dateFilter) {
+                    case 'today':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        break;
+                    case 'week':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                        break;
+                    case 'month':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        break;
+                }
+
+                filteredOrders = filteredOrders.filter(order => 
+                    new Date(order.createdAt) >= startDate
+                );
+            }
+
+            // Custom date range
+            if (fromDate) {
+                filteredOrders = filteredOrders.filter(order => 
+                    new Date(order.createdAt) >= new Date(fromDate)
+                );
+            }
+            if (toDate) {
+                const to = new Date(toDate);
+                to.setDate(to.getDate() + 1); // Include the end date
+                filteredOrders = filteredOrders.filter(order => 
+                    new Date(order.createdAt) < to
+                );
+            }
+
+            // Search filter
+            if (searchTerm) {
+                filteredOrders = filteredOrders.filter(order => 
+                    order.orderNumber?.toLowerCase().includes(searchTerm) ||
+                    order.userEmail?.toLowerCase().includes(searchTerm) ||
+                    order._id?.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            displayOrders(filteredOrders);
+        }
+
+        function resetFilters() {
+            document.getElementById('status-filter').value = 'all';
+            document.getElementById('date-filter').value = 'all';
+            document.getElementById('from-date').value = '';
+            document.getElementById('to-date').value = '';
+            document.getElementById('order-search').value = '';
+            displayOrders(allOrders);
+        }
+
+        function viewOrderDetails(orderId) {
+            const order = allOrders.find(o => o._id === orderId);
+            if (!order) return;
+
+            currentOrderId = orderId;
+            
+            // Populate modal with order details
+            document.getElementById('modal-order-number').textContent = order.orderNumber || 'N/A';
+            document.getElementById('modal-order-date').textContent = new Date(order.createdAt).toLocaleString('en-IN');
+            document.getElementById('modal-customer').textContent = order.userEmail || 'N/A';
+            document.getElementById('modal-status').textContent = order.status || 'pending';
+            document.getElementById('modal-payment').textContent = order.paymentMethod || 'N/A';
+            
+            // Address
+            const address = order.shippingAddress ? 
+                `${order.shippingAddress.street || ''}, ${order.shippingAddress.city || ''}, ${order.shippingAddress.state || ''}, ${order.shippingAddress.pincode || ''}` :
+                'No address provided';
+            document.getElementById('modal-address').textContent = address;
+
+            // Items
+            const itemsHtml = order.items ? order.items.map(item => `
+                <div class="order-item">
+                    <img src="${item.image || 'logo.png'}" alt="${item.name}" onerror="this.src='logo.png'">
+                    <div class="item-details">
+                        <h5>${item.name}</h5>
+                        <p>Size: ${item.size || 'M'} | Qty: ${item.quantity}</p>
+                        <p>₹${item.price.toFixed(2)} x ${item.quantity} = ₹${item.itemTotal.toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('') : '<p>No items</p>';
+            document.getElementById('modal-items').innerHTML = itemsHtml;
+
+            // Totals
+            document.getElementById('modal-subtotal').textContent = (order.orderTotal || 0).toFixed(2);
+            document.getElementById('modal-discount').textContent = (order.discount || 0).toFixed(2);
+            document.getElementById('modal-gst').textContent = (order.gstAmount || 0).toFixed(2);
+            document.getElementById('modal-total').textContent = (order.finalTotal || 0).toFixed(2);
+
+            // Status select
+            document.getElementById('modal-status-select').value = order.status || 'pending';
+
+            // Show modal
+            document.getElementById('order-modal').style.display = 'block';
+        }
+
+        async function updateOrderStatus() {
+            const status = document.getElementById('modal-status-select').value;
             try {
-                const response = await fetch(`/api/admin/orders/${id}`, {
+                const response = await fetch(`/api/admin/orders/${currentOrderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Order status updated successfully');
+                    closeModal();
+                    loadOrders(); // Reload orders to reflect changes
+                } else {
+                    alert(data.message || 'Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Error updating order status');
+            }
+        }
+
+        function editOrderStatus(orderId) {
+            currentOrderId = orderId;
+            const order = allOrders.find(o => o._id === orderId);
+            if (order) {
+                const newStatus = prompt('Enter new status (pending/confirmed/shipped/delivered/cancelled):', order.status || 'pending');
+                if (newStatus && ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].includes(newStatus.toLowerCase())) {
+                    updateOrderStatusDirect(orderId, newStatus.toLowerCase());
+                } else if (newStatus) {
+                    alert('Invalid status. Please use: pending, confirmed, shipped, delivered, or cancelled.');
+                }
+            }
+        }
+
+        async function updateOrderStatusDirect(orderId, status) {
+            try {
+                const response = await fetch(`/api/admin/orders/${orderId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -117,6 +453,50 @@
                 alert('Error updating order status');
             }
         }
+
+        function printOrder() {
+            // Simple print functionality - in a real app, you'd generate a proper invoice
+            window.print();
+        }
+
+        function closeModal() {
+            document.getElementById('order-modal').style.display = 'none';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('no-orders').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showNoOrders() {
+            document.getElementById('no-orders').style.display = 'block';
+            document.getElementById('orders-table-body').innerHTML = '';
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        // Event Listeners
+        document.getElementById('status-filter').addEventListener('change', applyFilters);
+        document.getElementById('date-filter').addEventListener('change', applyFilters);
+        document.getElementById('from-date').addEventListener('change', applyFilters);
+        document.getElementById('to-date').addEventListener('change', applyFilters);
+        document.getElementById('order-search').addEventListener('input', applyFilters);
+        document.getElementById('mobile-order-search').addEventListener('input', applyFilters);
+
+        // Modal close events
+        document.querySelector('.close').addEventListener('click', closeModal);
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('order-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
