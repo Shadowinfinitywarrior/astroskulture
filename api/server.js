@@ -13,6 +13,7 @@ const adminHomeRoutes = require('./routes/admin/home');
 const adminOrdersRoutes = require('./routes/admin/orders');
 const wishlistRoutes = require('./routes/wishlist'); // New route
 const reviewsRoutes = require('./routes/reviews');  // New route
+const adminUsersRoutes = require('./routes/admin/users');
 
 const app = express();
 const port = 3000;
@@ -43,6 +44,7 @@ app.use('/api/admin/home', adminHomeRoutes);
 app.use('/api/admin/orders', adminOrdersRoutes);
 app.use('/api/wishlist', wishlistRoutes); // New route
 app.use('/api/reviews', reviewsRoutes);   // New route
+app.use('/api/admin/users', adminUsersRoutes);
 
 // Start server
 async function startServer() {
