@@ -8,18 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-dark: #1d4ed8;
+            --primary-color: #dc2626;
+            --primary-dark: #b91c1c;
             --secondary-color: #f8fafc;
-            --accent-color: #f59e0b;
+            --accent-color: #dc2626;
             --text-dark: #1e293b;
             --text-light: #64748b;
             --bg-white: #ffffff;
-            --bg-light: #f8fafc;
-            --border-color: #e2e8f0;
+            --bg-light: #fef2f2;
+            --border-color: #fecaca;
             --success-color: #10b981;
             --warning-color: #f59e0b;
-            --error-color: #ef4444;
+            --error-color: #dc2626;
             --radius-sm: 4px;
             --radius-md: 8px;
             --radius-lg: 12px;
@@ -45,7 +45,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             color: var(--text-dark);
-            background-color: var(--bg-light);
+            background-color: var(--bg-white);
             line-height: 1.6;
         }
 
@@ -166,7 +166,7 @@
         .desktop-search input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
         }
 
         .mobile-controls {
@@ -207,7 +207,7 @@
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('hero-bg.jpg') center/cover no-repeat;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600"><rect width="1200" height="600" fill="%23dc2626"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="white" text-anchor="middle">Astros Kulture Hero</text></svg>') center/cover no-repeat;
             color: white;
             text-align: center;
             padding: var(--space-2xl) 0;
@@ -271,11 +271,35 @@
             border-radius: var(--radius-sm);
         }
 
+        /* Horizontal Scroll Container for Products */
+        .products-scroll-container {
+            overflow-x: auto;
+            padding-bottom: var(--space-md);
+            margin-bottom: var(--space-lg);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--bg-light);
+        }
+
+        .products-scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .products-scroll-container::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: var(--radius-sm);
+        }
+
+        .products-scroll-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: var(--radius-sm);
+        }
+
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(280px, 1fr);
             gap: var(--space-lg);
-            margin-bottom: var(--space-lg);
+            padding: var(--space-sm);
         }
 
         .product-card {
@@ -285,11 +309,14 @@
             box-shadow: var(--shadow-md);
             transition: var(--transition);
             position: relative;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
         }
 
         .product-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
         }
 
         .product-image {
@@ -414,7 +441,7 @@
         }
 
         .discount-tag {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: rgba(220, 38, 38, 0.1);
             color: var(--error-color);
             padding: var(--space-xs) var(--space-sm);
             border-radius: var(--radius-sm);
@@ -468,11 +495,18 @@
             font-weight: 600;
             margin-top: var(--space-lg);
             transition: var(--transition);
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--primary-color);
+            border-radius: var(--radius-md);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .view-all:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
+            color: white;
+            background-color: var(--primary-color);
+            text-decoration: none;
         }
 
         /* Categories Section */
@@ -584,7 +618,7 @@
         /* Responsive Styles */
         @media (max-width: 1024px) {
             .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                grid-auto-columns: minmax(250px, 1fr);
             }
         }
 
@@ -606,7 +640,7 @@
             }
 
             .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                grid-auto-columns: minmax(200px, 1fr);
                 gap: var(--space-md);
             }
 
@@ -640,7 +674,7 @@
 
         @media (max-width: 480px) {
             .products-grid {
-                grid-template-columns: 1fr;
+                grid-auto-columns: minmax(160px, 1fr);
             }
 
             .hero {
@@ -725,8 +759,10 @@
         <!-- Featured Products Section -->
         <section class="product-row">
             <h2>Featured Products</h2>
-            <div id="featured-products" class="products-grid">
-                <!-- Featured products will be loaded here -->
+            <div class="products-scroll-container">
+                <div id="featured-products" class="products-grid">
+                    <!-- Featured products will be loaded here -->
+                </div>
             </div>
             <a href="shop.html" class="view-all">View All Products</a>
         </section>
@@ -734,8 +770,10 @@
         <!-- New Arrivals Section -->
         <section class="product-row">
             <h2>New Arrivals</h2>
-            <div id="new-arrivals" class="products-grid">
-                <!-- New arrivals will be loaded here -->
+            <div class="products-scroll-container">
+                <div id="new-arrivals" class="products-grid">
+                    <!-- New arrivals will be loaded here -->
+                </div>
             </div>
             <a href="shop.html?sort=newest" class="view-all">View All New Arrivals</a>
         </section>
@@ -743,8 +781,10 @@
         <!-- Best Sellers Section -->
         <section class="product-row">
             <h2>Best Sellers</h2>
-            <div id="best-sellers" class="products-grid">
-                <!-- Best sellers will be loaded here -->
+            <div class="products-scroll-container">
+                <div id="best-sellers" class="products-grid">
+                    <!-- Best sellers will be loaded here -->
+                </div>
             </div>
             <a href="shop.html?sort=popular" class="view-all">View All Best Sellers</a>
         </section>
@@ -752,8 +792,10 @@
         <!-- Recently Viewed Section -->
         <section class="product-row">
             <h2>Recently Viewed</h2>
-            <div id="recently-viewed" class="products-grid">
-                <!-- Recently viewed products will be loaded here -->
+            <div class="products-scroll-container">
+                <div id="recently-viewed" class="products-grid">
+                    <!-- Recently viewed products will be loaded here -->
+                </div>
             </div>
         </section>
 
@@ -817,8 +859,83 @@
     </footer>
 
     <script>
+        // Mock product data
+        const mockProducts = [
+            {
+                id: '1',
+                name: 'Astro Oversized Tee - Red',
+                brand: 'Astros Kulture',
+                price: 1299,
+                originalPrice: 1999,
+                rating: 4.5,
+                reviewCount: 24,
+                stock: 15,
+                featured: true,
+                images: ['https://via.placeholder.com/300x300/dc2626/ffffff?text=Astro+Tee']
+            },
+            {
+                id: '2',
+                name: 'Space Explorer Hoodie',
+                brand: 'Astros Kulture',
+                price: 2499,
+                originalPrice: 2999,
+                rating: 4.8,
+                reviewCount: 36,
+                stock: 8,
+                featured: true,
+                images: ['https://via.placeholder.com/300x300/1e293b/ffffff?text=Space+Hoodie']
+            },
+            {
+                id: '3',
+                name: 'Galaxy Print Shirt',
+                brand: 'Astros Kulture',
+                price: 1799,
+                originalPrice: 2299,
+                rating: 4.3,
+                reviewCount: 18,
+                stock: 12,
+                featured: false,
+                images: ['https://via.placeholder.com/300x300/334155/ffffff?text=Galaxy+Shirt']
+            },
+            {
+                id: '4',
+                name: 'Cosmic Joggers',
+                brand: 'Astros Kulture',
+                price: 1899,
+                originalPrice: 2499,
+                rating: 4.6,
+                reviewCount: 31,
+                stock: 5,
+                featured: true,
+                images: ['https://via.placeholder.com/300x300/475569/ffffff?text=Cosmic+Joggers']
+            },
+            {
+                id: '5',
+                name: 'Nebula Oversized Tee',
+                brand: 'Astros Kulture',
+                price: 1199,
+                originalPrice: 1599,
+                rating: 4.4,
+                reviewCount: 22,
+                stock: 20,
+                featured: false,
+                images: ['https://via.placeholder.com/300x300/7c2d12/ffffff?text=Nebula+Tee']
+            },
+            {
+                id: '6',
+                name: 'Solar Flare Jacket',
+                brand: 'Astros Kulture',
+                price: 3499,
+                originalPrice: 4499,
+                rating: 4.9,
+                reviewCount: 45,
+                stock: 3,
+                featured: true,
+                images: ['https://via.placeholder.com/300x300/991b1b/ffffff?text=Solar+Jacket']
+            }
+        ];
+
         // JavaScript functions would go here
-        // For demonstration, I'll just add a simple script to show the mobile menu
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.querySelector('.menu-toggle');
             const navLinks = document.querySelector('.nav-links');
@@ -833,10 +950,87 @@
             loadHomepageContent();
         });
 
-        // Mock functions for demonstration
         function loadHomepageContent() {
             console.log('Loading homepage content...');
-            // In a real implementation, this would fetch data from an API
+            
+            // Display featured products
+            displayProducts(mockProducts, 'featured-products');
+            
+            // Display new arrivals (first 4 products)
+            displayProducts(mockProducts.slice(0, 4), 'new-arrivals');
+            
+            // Display best sellers (last 4 products)
+            displayProducts(mockProducts.slice(2, 6), 'best-sellers');
+            
+            // Display recently viewed (random 3 products)
+            const shuffled = [...mockProducts].sort(() => 0.5 - Math.random());
+            displayProducts(shuffled.slice(0, 3), 'recently-viewed');
+        }
+
+        function displayProducts(products, containerId) {
+            const container = document.getElementById(containerId);
+            
+            container.innerHTML = products.map(product => {
+                const discount = product.originalPrice && product.originalPrice > product.price ? 
+                    Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+                
+                const stockStatus = getStockStatus(product.stock || 0);
+                
+                return `
+                    <div class="product-card" onclick="openProduct('${product.id}')">
+                        <div class="product-image">
+                            <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
+                                 alt="${product.name}" 
+                                 onerror="this.src='logo.png'">
+                            ${discount > 0 ? `<div class="discount-badge">${discount}% OFF</div>` : ''}
+                            <div class="stock-badge ${stockStatus}">${stockStatus.replace('-', ' ')}</div>
+                            ${product.featured ? `<div class="featured-badge">Featured</div>` : ''}
+                        </div>
+                        <div class="product-info">
+                            <h3>${product.name}</h3>
+                            ${product.brand ? `<p class="brand">${product.brand}</p>` : ''}
+                            <div class="rating">
+                                <span class="stars">${'★'.repeat(Math.floor(product.rating || 4))}${'☆'.repeat(5-Math.floor(product.rating || 4))}</span>
+                                <span class="review-count">(${product.reviewCount || 0})</span>
+                            </div>
+                            <div class="price">
+                                <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
+                                ${product.originalPrice && product.originalPrice > product.price ? 
+                                    `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
+                                }
+                                ${discount > 0 ? `<span class="discount-tag">Save ${discount}%</span>` : ''}
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">Buy Now</button>
+                                <button class="btn cart-btn" onclick="event.stopPropagation(); addToCart('${product.id}')">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStockStatus(stock) {
+            if (stock > 10) return 'in-stock';
+            if (stock > 0) return 'low-stock';
+            return 'out-of-stock';
+        }
+
+        function openProduct(productId) {
+            // Navigate to product page
+            window.location.href = `product.html?id=${productId}`;
+        }
+
+        function buyNow(productId) {
+            // Add to cart and redirect to checkout/cart page
+            addToCart(productId);
+            window.location.href = 'cart.html';
+        }
+
+        function addToCart(productId) {
+            // Add to cart functionality
+            console.log(`Added product ${productId} to cart`);
+            alert('Product added to cart!');
         }
 
         function searchProducts() {
