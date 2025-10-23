@@ -3,438 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astros Kulture</title>
+    <title>Astros Kulture - Premium Clothing</title>
     <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <nav class="navbar">
-        <div class="logo">
-            <img src="logo.png" alt="Astros Kulture">
-        </div>
-        <div class="mobile-controls">
-            <div class="mobile-search">
-                <input type="text" placeholder="Search" id="mobile-search">
-            </div>
-            <a href="cart.html" class="mobile-cart">Cart</a>
-            <div class="menu-toggle">☰</div>
-        </div>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li class="dropdown-parent">
-                <a href="#">Products</a>
-                <ul class="dropdown">
-                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
-                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
-                    <li><a href="shop.html?category=shirts">Shirts</a></li>
-                    <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
-                </ul>
-            </li>
-            <li class="dropdown-parent">
-                <a href="#">Account</a>
-                <ul class="dropdown" id="account-menu">
-                    <li><a href="login.html" class="login-link">Login</a></li>
-                    <li><a href="register.html" class="login-link">Register</a></li>
-                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
-                </ul>
-            </li>
-            <li class="desktop-search">
-                <input type="text" placeholder="Search" id="search" onkeyup="searchProducts()">
-            </li>
-            <li class="desktop-cart">
-                <a href="cart.html">Cart</a>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Promotional Banner -->
-    <section class="promo-banner">
-        <div class="banner-content">
-            <h1>Min 55% Off</h1>
-            <p>Discover Amazing Deals</p>
-        </div>
-    </section>
-
-    <section class="hero fade-in">
-        <h1>Welcome to Astros Kulture</h1>
-        <p>Explore our exclusive collection of premium clothing</p>
-        <a href="shop.html" class="btn">Shop Now</a>
-    </section>
-
-    <!-- Featured Products Section -->
-    <section class="product-row">
-        <h2>Featured Products</h2>
-        <div id="featured-products" class="products-grid">
-            <!-- Featured products will be loaded here -->
-        </div>
-        <a href="shop.html" class="view-all">View All Products</a>
-    </section>
-
-    <!-- New Arrivals Section -->
-    <section class="product-row">
-        <h2>New Arrivals</h2>
-        <div id="new-arrivals" class="products-grid">
-            <!-- New arrivals will be loaded here -->
-        </div>
-        <a href="shop.html?sort=newest" class="view-all">View All New Arrivals</a>
-    </section>
-
-    <!-- Best Sellers Section -->
-    <section class="product-row">
-        <h2>Best Sellers</h2>
-        <div id="best-sellers" class="products-grid">
-            <!-- Best sellers will be loaded here -->
-        </div>
-        <a href="shop.html?sort=popular" class="view-all">View All Best Sellers</a>
-    </section>
-
-    <!-- Recently Viewed Section -->
-    <section class="product-row">
-        <h2>Recently Viewed</h2>
-        <div id="recently-viewed" class="products-grid">
-            <!-- Recently viewed products will be loaded here -->
-        </div>
-    </section>
-
-    <!-- Categories Section -->
-    <section class="product-row">
-        <h2>Shop by Category</h2>
-        <div class="categories-grid">
-            <a href="shop.html?category=oversized" class="category-card">
-                <div class="category-icon">👕</div>
-                <h3>Oversized T-shirts</h3>
-                <p>Comfortable and stylish oversized fits</p>
-            </a>
-            <a href="shop.html?category=normal" class="category-card">
-                <div class="category-icon">🎽</div>
-                <h3>Normal T-shirts</h3>
-                <p>Classic fits for everyday wear</p>
-            </a>
-            <a href="shop.html?category=shirts" class="category-card">
-                <div class="category-icon">👔</div>
-                <h3>Shirts</h3>
-                <p>Premium shirts for all occasions</p>
-            </a>
-            <a href="shop.html?category=pants" class="category-card">
-                <div class="category-icon">👖</div>
-                <h3>Men Cotton Pants</h3>
-                <p>Comfortable cotton pants</p>
-            </a>
-        </div>
-    </section>
-
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Contact Information</h3>
-                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
-                <p><strong>WHATSAPP:</strong> 7871658830</p>
-                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
-                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <a href="index.html">Home</a>
-                <a href="shop.html">Shop</a>
-                <a href="cart.html">Cart</a>
-                <a href="account.html">Account</a>
-            </div>
-            <div class="footer-section">
-                <h3>Policies</h3>
-                <a href="#">Terms & Conditions</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Return Policy</a>
-                <a href="#">Shipping Policy</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="script.js"></script>
-    <script>
-        updateAccountMenu();
-        
-        async function loadHomepageContent() {
-            try {
-                // Load featured products
-                await loadFeaturedProducts();
-                
-                // Load new arrivals
-                await loadNewArrivals();
-                
-                // Load best sellers
-                await loadBestSellers();
-                
-                // Load recently viewed
-                await loadRecentlyViewed();
-                
-            } catch (error) {
-                console.error('Error loading homepage content:', error);
-                showErrorStates();
-            }
-        }
-
-        async function loadFeaturedProducts() {
-            try {
-                const response = await fetch('/api/products?featured=true&limit=8');
-                const data = await response.json();
-                
-                if (data.success && data.products.length > 0) {
-                    displayProducts(data.products, 'featured-products');
-                } else {
-                    document.getElementById('featured-products').innerHTML = `
-                        <div class="no-products">
-                            <p>No featured products available</p>
-                            <a href="shop.html" class="btn">Browse Products</a>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading featured products:', error);
-                document.getElementById('featured-products').innerHTML = `
-                    <div class="error-state">
-                        <p>Error loading featured products</p>
-                        <button class="btn" onclick="loadFeaturedProducts()">Retry</button>
-                    </div>
-                `;
-            }
-        }
-
-        async function loadNewArrivals() {
-            try {
-                const response = await fetch('/api/products?sort=newest&limit=8');
-                const data = await response.json();
-                
-                if (data.success && data.products.length > 0) {
-                    displayProducts(data.products, 'new-arrivals');
-                } else {
-                    document.getElementById('new-arrivals').innerHTML = `
-                        <div class="no-products">
-                            <p>No new arrivals available</p>
-                            <a href="shop.html" class="btn">Browse Products</a>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading new arrivals:', error);
-                document.getElementById('new-arrivals').innerHTML = `
-                    <div class="error-state">
-                        <p>Error loading new arrivals</p>
-                        <button class="btn" onclick="loadNewArrivals()">Retry</button>
-                    </div>
-                `;
-            }
-        }
-
-        async function loadBestSellers() {
-            try {
-                const response = await fetch('/api/products?sort=popular&limit=8');
-                const data = await response.json();
-                
-                if (data.success && data.products.length > 0) {
-                    displayProducts(data.products, 'best-sellers');
-                } else {
-                    document.getElementById('best-sellers').innerHTML = `
-                        <div class="no-products">
-                            <p>No best sellers available</p>
-                            <a href="shop.html" class="btn">Browse Products</a>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading best sellers:', error);
-                document.getElementById('best-sellers').innerHTML = `
-                    <div class="error-state">
-                        <p>Error loading best sellers</p>
-                        <button class="btn" onclick="loadBestSellers()">Retry</button>
-                    </div>
-                `;
-            }
-        }
-
-        async function loadRecentlyViewed() {
-            const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-            
-            if (recentlyViewed.length === 0) {
-                document.getElementById('recently-viewed').innerHTML = `
-                    <div class="no-products">
-                        <p>No recently viewed items</p>
-                        <p>Start browsing to see your recently viewed products here</p>
-                    </div>
-                `;
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/products', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: recentlyViewed.slice(0, 8) })
-                });
-                const data = await response.json();
-                
-                if (data.success && data.products.length > 0) {
-                    displayProducts(data.products, 'recently-viewed');
-                } else {
-                    document.getElementById('recently-viewed').innerHTML = `
-                        <div class="no-products">
-                            <p>No recently viewed items available</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading recently viewed:', error);
-                document.getElementById('recently-viewed').innerHTML = `
-                    <div class="error-state">
-                        <p>Error loading recently viewed</p>
-                        <button class="btn" onclick="loadRecentlyViewed()">Retry</button>
-                    </div>
-                `;
-            }
-        }
-
-        function displayProducts(products, containerId) {
-            const container = document.getElementById(containerId);
-            
-            container.innerHTML = products.map(product => {
-                const discount = product.originalPrice && product.originalPrice > product.price ? 
-                    Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
-                
-                const stockStatus = getStockStatus(product.stock || 0);
-                
-                return `
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
-                                 alt="${product.name}" 
-                                 onerror="this.src='logo.png'"
-                                 onclick="window.location.href='product.html?id=${product._id}'"
-                                 style="cursor: pointer;">
-                            ${discount > 0 ? `<div class="discount-badge">${discount}% OFF</div>` : ''}
-                            <div class="stock-badge ${stockStatus}">${stockStatus.replace('-', ' ')}</div>
-                            ${product.featured ? `<div class="featured-badge">Featured</div>` : ''}
-                        </div>
-                        <div class="product-info">
-                            <h3>${product.name}</h3>
-                            ${product.brand ? `<p class="brand">${product.brand}</p>` : ''}
-                            <div class="rating">
-                                <span class="stars">${'★'.repeat(Math.floor(product.rating || 4))}${'☆'.repeat(5-Math.floor(product.rating || 4))}</span>
-                                <span class="review-count">(${product.reviewCount || 0})</span>
-                            </div>
-                            <div class="price">
-                                <span class="current-price">₹${(product.price || 0).toFixed(2)}</span>
-                                ${product.originalPrice && product.originalPrice > product.price ? 
-                                    `<span class="original-price">₹${product.originalPrice.toFixed(2)}</span>` : ''
-                                }
-                                ${discount > 0 ? `<span class="discount-tag">Save ${discount}%</span>` : ''}
-                            </div>
-                            <div class="product-actions">
-                                <button class="btn buy-now-btn" onclick="buyNow('${product._id}')">Buy Now</button>
-                                <button class="btn cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function getStockStatus(stock) {
-            if (stock > 10) return 'in-stock';
-            if (stock > 0) return 'low-stock';
-            return 'out-of-stock';
-        }
-
-        function buyNow(productId) {
-            // Add to cart and redirect to checkout/cart page
-            addToCart(productId);
-            window.location.href = 'cart.html';
-        }
-
-        function showErrorStates() {
-            const sections = ['featured-products', 'new-arrivals', 'best-sellers', 'recently-viewed'];
-            
-            sections.forEach(section => {
-                const container = document.getElementById(section);
-                if (container && container.innerHTML === '') {
-                    container.innerHTML = `
-                        <div class="error-state">
-                            <p>Unable to load products</p>
-                            <button class="btn" onclick="loadHomepageContent()">Retry</button>
-                        </div>
-                    `;
-                }
-            });
-        }
-
-        async function searchProducts() {
-            const searchTerm = document.getElementById('search').value.toLowerCase();
-            const mobileSearchTerm = document.getElementById('mobile-search').value.toLowerCase();
-            const term = searchTerm || mobileSearchTerm;
-            
-            if (term.length < 3) {
-                loadHomepageContent();
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/products/search?query=${encodeURIComponent(term)}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Clear all sections and show search results in featured section
-                    document.getElementById('featured-products').innerHTML = '';
-                    document.getElementById('new-arrivals').innerHTML = '';
-                    document.getElementById('best-sellers').innerHTML = '';
-                    document.getElementById('recently-viewed').innerHTML = '';
-                    
-                    document.querySelector('.product-row h2').textContent = `Search Results for "${term}"`;
-                    
-                    if (data.products.length > 0) {
-                        displayProducts(data.products.slice(0, 8), 'featured-products');
-                    } else {
-                        document.getElementById('featured-products').innerHTML = `
-                            <div class="no-products">
-                                <p>No products found for "${term}"</p>
-                                <a href="shop.html" class="btn">Browse All Products</a>
-                            </div>
-                        `;
-                    }
-                }
-            } catch (error) {
-                console.error('Error searching products:', error);
-                document.getElementById('featured-products').innerHTML = `
-                    <div class="error-state">
-                        <p>Error searching products</p>
-                        <button class="btn" onclick="searchProducts()">Retry</button>
-                    </div>
-                `;
-            }
-        }
-
-        function addToRecentlyViewed(productId) {
-            let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-            recentlyViewed = recentlyViewed.filter(id => id !== productId);
-            recentlyViewed.unshift(productId);
-            recentlyViewed = recentlyViewed.slice(0, 10);
-            localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
-        }
-
-        // Mobile search functionality
-        document.getElementById('mobile-search').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                searchProducts();
-            }
-        });
-
-        // Initialize homepage
-        document.addEventListener('DOMContentLoaded', function() {
-            loadHomepageContent();
-        });
-    </script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Additional styles for the updated homepage */
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #f8fafc;
+            --accent-color: #f59e0b;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-white: #ffffff;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: var(--bg-white);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: var(--space-md) 0;
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .nav-links li {
+            position: relative;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            transition: var(--transition);
+            padding: var(--space-sm) 0;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .dropdown-parent:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--bg-white);
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--radius-md);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 100;
+            padding: var(--space-sm) 0;
+        }
+
+        .dropdown li {
+            width: 100%;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: var(--space-sm) var(--space-md);
+            transition: var(--transition);
+        }
+
+        .dropdown a:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        .desktop-search input {
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 200px;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--transition);
+        }
+
+        .desktop-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .mobile-controls {
+            display: none;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .mobile-search input {
+            padding: var(--space-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 150px;
+        }
+
+        .menu-toggle {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Promotional Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            text-align: center;
+            padding: var(--space-md) 0;
+        }
+
+        .banner-content h1 {
+            font-size: 1.8rem;
+            margin-bottom: var(--space-xs);
+        }
+
+        .banner-content p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('hero-bg.jpg') center/cover no-repeat;
+            color: white;
+            text-align: center;
+            padding: var(--space-2xl) 0;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: var(--space-lg);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Product Sections */
+        .product-row {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .product-row h2 {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: var(--space-md);
+        }
+
+        .product-row h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .product-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-image {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: var(--space-md);
+            left: var(--space-md);
+            background-color: var(--error-color);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .stock-badge.in-stock {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .stock-badge.low-stock {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .stock-badge.out-of-stock {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .featured-badge {
+            position: absolute;
+            bottom: var(--space-md);
+            left: var(--space-md);
+            background-color: var(--accent-color);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: var(--space-lg);
+        }
+
+        .product-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: var(--space-xs);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .brand {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .stars {
+            color: var(--accent-color);
+            margin-right: var(--space-xs);
+        }
+
+        .review-count {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        .price {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .current-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .original-price {
+            font-size: 1rem;
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+
+        .discount-tag {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .buy-now-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .buy-now-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .cart-btn {
+            background: var(--secondary-color);
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .cart-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .view-all {
+            display: block;
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-top: var(--space-lg);
+            transition: var(--transition);
+        }
+
+        .view-all:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Categories Section */
         .categories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -478,6 +519,45 @@
             line-height: 1.5;
         }
 
+        /* Footer */
+        footer {
+            background-color: var(--text-dark);
+            color: white;
+            padding: var(--space-2xl) 0 var(--space-lg);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: var(--space-md);
+            color: white;
+        }
+
+        .footer-section p, .footer-section a {
+            margin-bottom: var(--space-sm);
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--space-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Utility Classes */
         .no-products, .error-state {
             text-align: center;
             padding: var(--space-xl);
@@ -492,49 +572,44 @@
             color: var(--text-light);
         }
 
-        /* Updated button styles */
-        .buy-now-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: var(--space-sm) var(--space-md);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            flex: 1;
-            margin-right: var(--space-sm);
+        .fade-in {
+            animation: fadeIn 1s ease-in;
         }
 
-        .buy-now-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .cart-btn {
-            background: var(--secondary-color);
-            color: var(--text-dark);
-            border: 2px solid var(--border-color);
-            padding: var(--space-sm) var(--space-md);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            flex: 1;
-        }
-
-        .cart-btn:hover {
-            background: var(--border-color);
-            transform: translateY(-2px);
-        }
-
-        .product-actions {
-            display: flex;
-            gap: var(--space-sm);
-            margin-top: var(--space-md);
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
         }
 
         @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-controls {
+                display: flex;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: var(--space-md);
+            }
+
             .categories-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: var(--space-md);
@@ -556,7 +631,218 @@
                 margin-right: 0;
                 margin-bottom: var(--space-sm);
             }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: var(--space-xl) 0;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .product-row h2 {
+                font-size: 1.5rem;
+            }
+
+            .banner-content h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="logo.png" alt="Astros Kulture">
+            </div>
+            <div class="mobile-controls">
+                <div class="mobile-search">
+                    <input type="text" placeholder="Search" id="mobile-search">
+                </div>
+                <a href="cart.html" class="mobile-cart">Cart</a>
+                <div class="menu-toggle">☰</div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown-parent">
+                    <a href="#">Products</a>
+                    <ul class="dropdown">
+                        <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                        <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                        <li><a href="shop.html?category=shirts">Shirts</a></li>
+                        <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown-parent">
+                    <a href="#">Account</a>
+                    <ul class="dropdown" id="account-menu">
+                        <li><a href="login.html" class="login-link">Login</a></li>
+                        <li><a href="register.html" class="login-link">Register</a></li>
+                        <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                    </ul>
+                </li>
+                <li class="desktop-search">
+                    <input type="text" placeholder="Search" id="search" onkeyup="searchProducts()">
+                </li>
+                <li class="desktop-cart">
+                    <a href="cart.html">Cart</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Promotional Banner -->
+    <section class="promo-banner">
+        <div class="container">
+            <div class="banner-content">
+                <h1>Min 55% Off</h1>
+                <p>Discover Amazing Deals on Premium Clothing</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="hero fade-in">
+        <div class="container">
+            <h1>Welcome to Astros Kulture</h1>
+            <p>Explore our exclusive collection of premium clothing that combines style, comfort, and quality</p>
+            <a href="shop.html" class="btn">Shop Now</a>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Featured Products Section -->
+        <section class="product-row">
+            <h2>Featured Products</h2>
+            <div id="featured-products" class="products-grid">
+                <!-- Featured products will be loaded here -->
+            </div>
+            <a href="shop.html" class="view-all">View All Products</a>
+        </section>
+
+        <!-- New Arrivals Section -->
+        <section class="product-row">
+            <h2>New Arrivals</h2>
+            <div id="new-arrivals" class="products-grid">
+                <!-- New arrivals will be loaded here -->
+            </div>
+            <a href="shop.html?sort=newest" class="view-all">View All New Arrivals</a>
+        </section>
+
+        <!-- Best Sellers Section -->
+        <section class="product-row">
+            <h2>Best Sellers</h2>
+            <div id="best-sellers" class="products-grid">
+                <!-- Best sellers will be loaded here -->
+            </div>
+            <a href="shop.html?sort=popular" class="view-all">View All Best Sellers</a>
+        </section>
+
+        <!-- Recently Viewed Section -->
+        <section class="product-row">
+            <h2>Recently Viewed</h2>
+            <div id="recently-viewed" class="products-grid">
+                <!-- Recently viewed products will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="product-row">
+            <h2>Shop by Category</h2>
+            <div class="categories-grid">
+                <a href="shop.html?category=oversized" class="category-card">
+                    <div class="category-icon">👕</div>
+                    <h3>Oversized T-shirts</h3>
+                    <p>Comfortable and stylish oversized fits for a modern look</p>
+                </a>
+                <a href="shop.html?category=normal" class="category-card">
+                    <div class="category-icon">🎽</div>
+                    <h3>Normal T-shirts</h3>
+                    <p>Classic fits for everyday wear with premium quality</p>
+                </a>
+                <a href="shop.html?category=shirts" class="category-card">
+                    <div class="category-icon">👔</div>
+                    <h3>Shirts</h3>
+                    <p>Premium shirts for all occasions and styles</p>
+                </a>
+                <a href="shop.html?category=pants" class="category-card">
+                    <div class="category-icon">👖</div>
+                    <h3>Men Cotton Pants</h3>
+                    <p>Comfortable cotton pants for everyday comfort</p>
+                </a>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact Information</h3>
+                    <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                    <p><strong>WHATSAPP:</strong> 7871658830</p>
+                    <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                    <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="cart.html">Cart</a>
+                    <a href="account.html">Account</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Policies</h3>
+                    <a href="#">Terms & Conditions</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Return Policy</a>
+                    <a href="#">Shipping Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript functions would go here
+        // For demonstration, I'll just add a simple script to show the mobile menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function() {
+                    navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+                });
+            }
+            
+            // Load homepage content
+            loadHomepageContent();
+        });
+
+        // Mock functions for demonstration
+        function loadHomepageContent() {
+            console.log('Loading homepage content...');
+            // In a real implementation, this would fetch data from an API
+        }
+
+        function searchProducts() {
+            console.log('Searching products...');
+            // In a real implementation, this would handle search functionality
+        }
+    </script>
 </body>
 </html>
