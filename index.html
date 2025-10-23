@@ -1,3 +1,5 @@
+[file name]: index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -309,7 +311,8 @@
                             <img src="${product.images && product.images[0] ? product.images[0] : 'logo.png'}" 
                                  alt="${product.name}" 
                                  onerror="this.src='logo.png'"
-                                 onclick="window.location.href='product.html?id=${product._id}'">
+                                 onclick="window.location.href='product.html?id=${product._id}'"
+                                 style="cursor: pointer;">
                             ${discount > 0 ? `<div class="discount-badge">${discount}% OFF</div>` : ''}
                             <div class="stock-badge ${stockStatus}">${stockStatus.replace('-', ' ')}</div>
                             ${product.featured ? `<div class="featured-badge">Featured</div>` : ''}
@@ -329,7 +332,7 @@
                                 ${discount > 0 ? `<span class="discount-tag">Save ${discount}%</span>` : ''}
                             </div>
                             <div class="product-actions">
-                                <button class="btn view-btn" onclick="window.location.href='product.html?id=${product._id}'">View Details</button>
+                                <button class="btn buy-now-btn" onclick="buyNow('${product._id}')">Buy Now</button>
                                 <button class="btn cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
                             </div>
                         </div>
@@ -342,6 +345,12 @@
             if (stock > 10) return 'in-stock';
             if (stock > 0) return 'low-stock';
             return 'out-of-stock';
+        }
+
+        function buyNow(productId) {
+            // Add to cart and redirect to checkout/cart page
+            addToCart(productId);
+            window.location.href = 'cart.html';
         }
 
         function showErrorStates() {
@@ -485,6 +494,48 @@
             color: var(--text-light);
         }
 
+        /* Updated button styles */
+        .buy-now-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            flex: 1;
+            margin-right: var(--space-sm);
+        }
+
+        .buy-now-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .cart-btn {
+            background: var(--secondary-color);
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .cart-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+
         @media (max-width: 768px) {
             .categories-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -497,6 +548,15 @@
             
             .category-icon {
                 font-size: 2.5rem;
+            }
+
+            .product-actions {
+                flex-direction: column;
+            }
+
+            .buy-now-btn, .cart-btn {
+                margin-right: 0;
+                margin-bottom: var(--space-sm);
             }
         }
     </style>
