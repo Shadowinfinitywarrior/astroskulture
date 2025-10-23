@@ -12,6 +12,9 @@ astros-kulture/
 ├── admin-home.html         # Admin homepage config
 ├── admin-orders.html       # Admin orders management
 ├── style.css               # Global CSS
+├── admin-style.css
+├── .env
+├── .gitignore
 ├── script.js               # Global JS functions (e.g., addToCart)
 ├── logo.png                # Logo (red/white PNG with star icon)
 ├── package.json            # Node.js package config
@@ -23,6 +26,8 @@ astros-kulture/
     │   ├── home.js         # API for homepage rows
     │   ├── products.js     # API for products (get all/by id/by category)
     │   ├── orders.js       # API for orders (create/get)
+    |   ├── reviews.js
+    |   ├── wishlist.js
     │   ├── login.js        # API for login
     │   ├── register.js     # API for register
     │   ├── auth/
@@ -30,4 +35,5 @@ astros-kulture/
     │   └── admin/
     │       ├── products.js # API for admin product management
     │       ├── home.js     # API for admin homepage config
-    │       └── orders.js   # API for admin orders management
+    │       ├── orders.js   # API for admin orders management
+    |       └── user.js
