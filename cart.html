@@ -5,148 +5,841 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart - Astros Kulture</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #f8fafc;
+            --accent-color: #f59e0b;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-white: #ffffff;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: var(--bg-white);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: var(--space-md) 0;
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .nav-links li {
+            position: relative;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            transition: var(--transition);
+            padding: var(--space-sm) 0;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .dropdown-parent:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--bg-white);
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--radius-md);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 100;
+            padding: var(--space-sm) 0;
+        }
+
+        .dropdown li {
+            width: 100%;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: var(--space-sm) var(--space-md);
+            transition: var(--transition);
+        }
+
+        .dropdown a:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+        }
+
+        .desktop-search input {
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 200px;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--transition);
+        }
+
+        .desktop-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .mobile-controls {
+            display: none;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .mobile-search input {
+            padding: var(--space-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 150px;
+        }
+
+        .menu-toggle {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Cart Styles */
+        .cart {
+            padding: var(--space-xl) 0;
+        }
+
+        .cart-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            text-align: center;
+        }
+
+        .cart-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .cart-items-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .cart-item {
+            display: flex;
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            gap: var(--space-lg);
+            align-items: flex-start;
+        }
+
+        .item-image {
+            flex: 0 0 120px;
+            height: 120px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .item-details p {
+            color: var(--text-light);
+            margin-bottom: var(--space-xs);
+            font-size: 0.9rem;
+        }
+
+        .item-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .remove-btn, .wishlist-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .remove-btn {
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .remove-btn:hover {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .wishlist-btn {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .wishlist-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Recommended Products */
+        .recommended-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .recommended-section h3 {
+            margin-bottom: var(--space-lg);
+            text-align: center;
+            font-size: 1.5rem;
+            position: relative;
+            padding-bottom: var(--space-md);
+        }
+
+        .recommended-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .product-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: var(--space-md);
+            left: var(--space-md);
+            background-color: var(--error-color);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: var(--space-md);
+        }
+
+        .product-info h3 {
+            font-size: 1rem;
+            margin-bottom: var(--space-sm);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .price {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .current-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .original-price {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+
+        .view-product-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .view-product-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Membership Offer */
+        .membership-offer {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid var(--accent-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .membership-offer h3 {
+            color: var(--text-dark);
+            margin-bottom: var(--space-sm);
+            font-size: 1.2rem;
+        }
+
+        .membership-offer p {
+            color: var(--text-light);
+            margin-bottom: var(--space-md);
+        }
+
+        .offer-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+
+        .offer-details p {
+            margin-bottom: 0;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .view-benefits {
+            background: var(--accent-color);
+            color: var(--text-dark);
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .view-benefits:hover {
+            background: #eab308;
+        }
+
+        /* Cart Options */
+        .cart-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .coupon-btn, .voucher-btn, .gift-wrap-btn, .points-btn {
+            background: var(--bg-white);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .coupon-btn:hover, .voucher-btn:hover, .gift-wrap-btn:hover, .points-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Price Details */
+        .price-details {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .price-details h3 {
+            margin-bottom: var(--space-md);
+            font-size: 1.2rem;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .total-row {
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--border-color);
+            margin-top: var(--space-sm);
+        }
+
+        .free-shipping {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        /* Brand Info */
+        .brand-info {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .brand-info h3 {
+            margin-bottom: var(--space-sm);
+            font-size: 1.2rem;
+        }
+
+        .brand-info p {
+            color: var(--text-light);
+            margin-bottom: var(--space-md);
+        }
+
+        .know-more-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .know-more-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Cart Summary */
+        .cart-summary {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-white);
+            padding: var(--space-md);
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--radius-lg);
+            text-align: center;
+        }
+
+        .checkout-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .checkout-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--text-dark);
+            color: white;
+            padding: var(--space-2xl) 0 var(--space-lg);
+            margin-top: var(--space-2xl);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: var(--space-md);
+            color: white;
+        }
+
+        .footer-section p, .footer-section a {
+            margin-bottom: var(--space-sm);
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--space-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-controls {
+                display: flex;
+            }
+
+            .cart-item {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+
+            .item-image {
+                flex: 0 0 100%;
+                height: 200px;
+            }
+
+            .item-actions {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .remove-btn, .wishlist-btn {
+                flex: 1;
+                margin: 0 var(--space-xs);
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: var(--space-md);
+            }
+
+            .cart-options {
+                justify-content: center;
+            }
+
+            .offer-details {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-options {
+                flex-direction: column;
+            }
+
+            .coupon-btn, .voucher-btn, .gift-wrap-btn, .points-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">
-            <img src="logo.png" alt="Astros Kulture">
-        </div>
-        <div class="mobile-controls">
-            <div class="mobile-search">
-                <input type="text" placeholder="Search" id="mobile-search">
+        <div class="container">
+            <div class="logo">
+                <img src="logo.png" alt="Astros Kulture">
             </div>
-            <a href="cart.html" class="mobile-cart">Cart</a>
-            <div class="menu-toggle">☰</div>
+            <div class="mobile-controls">
+                <div class="mobile-search">
+                    <input type="text" placeholder="Search" id="mobile-search">
+                </div>
+                <a href="cart.html" class="mobile-cart">Cart</a>
+                <div class="menu-toggle">☰</div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown-parent">
+                    <a href="#">Products</a>
+                    <ul class="dropdown">
+                        <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
+                        <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
+                        <li><a href="shop.html?category=shirts">Shirts</a></li>
+                        <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown-parent">
+                    <a href="#">Account</a>
+                    <ul class="dropdown" id="account-menu">
+                        <li><a href="login.html" class="login-link">Login</a></li>
+                        <li><a href="register.html" class="login-link">Register</a></li>
+                        <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
+                    </ul>
+                </li>
+                <li class="desktop-search">
+                    <input type="text" placeholder="Search" id="search">
+                </li>
+                <li class="desktop-cart">
+                    <a href="cart.html">Cart</a>
+                </li>
+            </ul>
         </div>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li class="dropdown-parent">
-                <a href="#">Products</a>
-                <ul class="dropdown">
-                    <li><a href="shop.html?category=oversized">Oversized T-shirts</a></li>
-                    <li><a href="shop.html?category=normal">Normal T-shirts</a></li>
-                    <li><a href="shop.html?category=shirts">Shirts</a></li>
-                    <li><a href="shop.html?category=pants">Men Cotton Pants</a></li>
-                </ul>
-            </li>
-            <li class="dropdown-parent">
-                <a href="#">Account</a>
-                <ul class="dropdown" id="account-menu">
-                    <li><a href="login.html" class="login-link">Login</a></li>
-                    <li><a href="register.html" class="login-link">Register</a></li>
-                    <li><a href="account.html" class="dashboard-link">Dashboard</a></li>
-                </ul>
-            </li>
-            <li class="desktop-search">
-                <input type="text" placeholder="Search" id="search">
-            </li>
-            <li class="desktop-cart">
-                <a href="cart.html">Cart</a>
-            </li>
-        </ul>
     </nav>
 
     <section class="cart">
-        <div class="cart-header">
-            <h2>3/3 ITEMS SELECTED (₹ 8697)</h2>
-        </div>
-        
-        <div id="cart-items" class="cart-items-container">
-            <!-- Cart items will be loaded here -->
-        </div>
-
-        <!-- You May Also Like Section -->
-        <section class="recommended-section">
-            <h3>YOU MAY ALSO LIKE</h3>
-            <div class="products-grid" id="recommended-products">
-                <!-- Recommended products will be loaded here -->
+        <div class="container">
+            <div class="cart-header">
+                <h2>3/3 ITEMS SELECTED (₹ 8697)</h2>
             </div>
-        </section>
-
-        <!-- Membership Offer -->
-        <div class="membership-offer">
-            <h3>YOU ARE MISSING OUT ON!</h3>
-            <p>Save an additional ₹360 by adding membership to your cart.</p>
-            <div class="offer-details">
-                <p>Free shipping on all orders</p>
-                <button class="btn view-benefits">View all benefits</button>
+            
+            <div id="cart-items" class="cart-items-container">
+                <!-- Cart items will be loaded here -->
             </div>
-        </div>
 
-        <!-- Coupon and Options -->
-        <div class="cart-options">
-            <button class="btn coupon-btn">Apply Coupon</button>
-            <button class="btn voucher-btn">Gift Voucher</button>
-            <button class="btn gift-wrap-btn">Gift Wrap (₹ 25)</button>
-            <button class="btn points-btn">TSS Money / TSS Points</button>
-        </div>
+            <!-- You May Also Like Section -->
+            <section class="recommended-section">
+                <h3>YOU MAY ALSO LIKE</h3>
+                <div class="products-grid" id="recommended-products">
+                    <!-- Recommended products will be loaded here -->
+                </div>
+            </section>
 
-        <!-- Price Details -->
-        <div class="price-details">
-            <h3>Price Details (3 Items)</h3>
-            <div class="price-row">
-                <span>Cart Total (incl. of all taxes)</span>
-                <span id="cart-subtotal">₹ 6010.97</span>
+            <!-- Membership Offer -->
+            <div class="membership-offer">
+                <h3>YOU ARE MISSING OUT ON!</h3>
+                <p>Save an additional ₹360 by adding membership to your cart.</p>
+                <div class="offer-details">
+                    <p>Free shipping on all orders</p>
+                    <button class="btn view-benefits">View all benefits</button>
+                </div>
             </div>
-            <div class="price-row">
-                <span>GST</span>
-                <span id="cart-gst">₹ 608.03</span>
-            </div>
-            <div class="price-row">
-                <span>Shipping Charges</span>
-                <span class="free-shipping">Free</span>
-            </div>
-            <div class="price-row total-row">
-                <span>Total Amount</span>
-                <span id="cart-total">₹ 6697.00</span>
-            </div>
-        </div>
 
-        <!-- Brand Info -->
-        <div class="brand-info">
-            <h3>HOMEGROWN INDIAN BRAND</h3>
-            <p>Over 6 Million Happy Customers</p>
-            <button class="btn know-more-btn">Know more about The Souled Store</button>
-        </div>
+            <!-- Coupon and Options -->
+            <div class="cart-options">
+                <button class="btn coupon-btn">Apply Coupon</button>
+                <button class="btn voucher-btn">Gift Voucher</button>
+                <button class="btn gift-wrap-btn">Gift Wrap (₹ 25)</button>
+                <button class="btn points-btn">TSS Money / TSS Points</button>
+            </div>
 
-        <div class="cart-summary" id="cart-summary">
-            <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+            <!-- Price Details -->
+            <div class="price-details">
+                <h3>Price Details (3 Items)</h3>
+                <div class="price-row">
+                    <span>Cart Total (incl. of all taxes)</span>
+                    <span id="cart-subtotal">₹ 6010.97</span>
+                </div>
+                <div class="price-row">
+                    <span>GST</span>
+                    <span id="cart-gst">₹ 608.03</span>
+                </div>
+                <div class="price-row">
+                    <span>Shipping Charges</span>
+                    <span class="free-shipping">Free</span>
+                </div>
+                <div class="price-row total-row">
+                    <span>Total Amount</span>
+                    <span id="cart-total">₹ 6697.00</span>
+                </div>
+            </div>
+
+            <!-- Brand Info -->
+            <div class="brand-info">
+                <h3>HOMEGROWN INDIAN BRAND</h3>
+                <p>Over 6 Million Happy Customers</p>
+                <button class="btn know-more-btn">Know more about The Souled Store</button>
+            </div>
+
+            <div class="cart-summary" id="cart-summary">
+                <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+            </div>
         </div>
     </section>
 
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Contact Information</h3>
-                <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
-                <p><strong>WHATSAPP:</strong> 7871658830</p>
-                <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
-                <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact Information</h3>
+                    <p><strong>MAIL SUPPORT:</strong> help.astroskulture@gmail.com</p>
+                    <p><strong>WHATSAPP:</strong> 7871658830</p>
+                    <p><strong>INSTAGRAM:</strong> <a href="https://www.instagram.com/astroskulture.in" target="_blank">@astroskulture.in</a></p>
+                    <p><strong>ADDRESS:</strong> 21c/144B North Kennedy St, MKP Nagar, Palaiyamkottai - Tirunelveli 627002</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="cart.html">Cart</a>
+                    <a href="account.html">Account</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Policies</h3>
+                    <a href="#">Terms & Conditions</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Return Policy</a>
+                    <a href="#">Shipping Policy</a>
+                </div>
             </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <a href="index.html">Home</a>
-                <a href="shop.html">Shop</a>
-                <a href="cart.html">Cart</a>
-                <a href="account.html">Account</a>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
             </div>
-            <div class="footer-section">
-                <h3>Policies</h3>
-                <a href="#">Terms & Conditions</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Return Policy</a>
-                <a href="#">Shipping Policy</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 Astros Kulture. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="script.js"></script>
     <script>
-        updateAccountMenu();
-        
         // Sample cart items data structure
         const sampleCartItems = [
             {
@@ -382,7 +1075,19 @@
             }
         });
 
-        loadCart();
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function() {
+                    navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+                });
+            }
+            
+            loadCart();
+        });
     </script>
 </body>
 </html>
